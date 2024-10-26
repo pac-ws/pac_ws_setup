@@ -46,7 +46,8 @@ fi
 # List of repositories and their relative target directories
 # Format: "REPO_URL RELATIVE_TARGET_DIR"
 REPOS=(
-    "https://github.com/pac-ws/px4_homify.git src/px4_homify"
+    "https://github.com/pac-ws/pac_ws_setup.git pac_ws_setup"
+    "https://github.com/wvat/px4_homify.git src/px4_homify"
     "https://github.com/pac-ws/coveragecontrol_sim.git src/coveragecontrol_sim"
     "https://github.com/pac-ws/cc_rviz.git src/cc_rviz"
     "https://github.com/pac-ws/async_pac_gnn_py.git src/async_pac_gnn_py"
@@ -74,6 +75,11 @@ for ENTRY in "${REPOS[@]}"; do
     if [[ -d "$TARGET_DIR/.git" ]]; then
         echo "Repository already exists. Attempting to update..."
         cd "$TARGET_DIR" || { echo "Failed to navigate to '$TARGET_DIR'."; exit 1; }
+
+        # Check for local changes
+        if [[ -n $(git status --porcelain)  ]]; then
+          echo -e "\e[33mWarning: There are local changes in '$TARGET_DIR'.\e[0m"
+        fi
 
         # Attempt to update the repository
         git pull
