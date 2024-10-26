@@ -53,6 +53,7 @@ REPOS=(
     "https://github.com/pac-ws/pt.git pt"
     "https://github.com/pac-ws/launch.git launch"
     "https://github.com/pac-ws/configs.git configs"
+    "https://github.com/wvat/starling_offboard_cpp.git src/starling_offboard_cpp"
 )
 
 # Loop through each repository in the list
