@@ -1,5 +1,4 @@
 ```bash
-# Requires ROS_NAMESPACE to be set
 PAC_WS=${HOME}/pac_ws
 mkdir -p ${PAC_WS}
 git clone https://github.com/pac-ws/pac_ws_setup.git ${PAC_WS}/pac_ws_setup
@@ -13,6 +12,7 @@ bash setup_pac_ws.bash -d ${PAC_WS}
 
 ```bash
 # Create container
+# Requires ROS_NAMESPACE to be set
 bash pac_create_container.sh -d ${PAC_WS} --ns ${ROS_NAMESPACE}
 ```
 
