@@ -7,13 +7,13 @@ export ROS_NAMESPACE=r0
 Close and reopen terminal.
 
 ```bash
-# Clone pac_ws_setup (Use this to also update the repositories)
+# Clone pac_ws_setup
 mkdir -p ${PAC_WS}
 git clone https://github.com/pac-ws/pac_ws_setup.git ${PAC_WS}/pac_ws_setup
 ```
 
 ```bash
-# Clone repositories
+# Clone repositories (Use this to also update the repositories)
 cd ${PAC_WS}/pac_ws_setup
 bash setup_pac_ws.bash -d ${PAC_WS}
 ```
