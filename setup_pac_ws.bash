@@ -101,7 +101,7 @@ for ENTRY in "${REPOS[@]}"; do
             fi
           fi
         elif [ $REMOTE = $BASE ]; then
-          echo "Need to push"
+          echo -e "\e[33mWarning: local commits found that are not in the remote repository.\e[0m"
         else
           echo -e "\e[33mgit branches have diverged. Needs manual intervention.\e[0m"
         fi
