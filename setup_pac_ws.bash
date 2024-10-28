@@ -47,13 +47,13 @@ fi
 # Format: "REPO_URL RELATIVE_TARGET_DIR"
 REPOS=(
     "https://github.com/pac-ws/pac_ws_setup.git pac_ws_setup"
-    "https://github.com/wvat/px4_homify.git src/px4_homify"
-    "https://github.com/pac-ws/coveragecontrol_sim.git src/coveragecontrol_sim"
-    "https://github.com/pac-ws/cc_rviz.git src/cc_rviz"
-    "https://github.com/pac-ws/async_pac_gnn_py.git src/async_pac_gnn_py"
     "https://github.com/pac-ws/pt.git pt"
     "https://github.com/pac-ws/launch.git launch"
     "https://github.com/pac-ws/configs.git configs"
+    "https://github.com/wvat/px4_homify.git src/px4_homify"
+    "https://github.com/pac-ws/cc_rviz.git src/cc_rviz"
+    "https://github.com/pac-ws/async_pac_gnn_py.git src/async_pac_gnn_py"
+    "https://github.com/pac-ws/coveragecontrol_sim.git src/coveragecontrol_sim"
     "https://github.com/wvat/starling_offboard_cpp.git src/starling_offboard_cpp"
     "https://github.com/wvat/starling_demos_cpp.git src/starling_demos_cpp"
 )
