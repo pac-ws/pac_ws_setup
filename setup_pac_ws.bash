@@ -89,6 +89,10 @@ for ENTRY in "${REPOS[@]}"; do
             exit 1
         else
             echo "Successfully updated repository at '$TARGET_DIR'."
+            # Check if the directory was pac_ws_setup, if so, print red warning to re-run setup_pac_ws.bash
+            if [[ "$RELATIVE_TARGET_DIR" == "pac_ws_setup" ]]; then
+                echo -e "\e[31mPlease re-run the setup_pac_ws.bash script to ensure the changes are applied.\e[0m"
+            fi
         fi
     else
         echo "Cloning repository..."
