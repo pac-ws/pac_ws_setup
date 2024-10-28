@@ -20,11 +20,13 @@ bash setup_pac_ws.bash -d ${PAC_WS}
 
 ```bash
 # Create container
+cd ${PAC_WS}/pac_ws_setup
 bash pac_create_container.sh -d ${PAC_WS} --ns ${ROS_NAMESPACE}
 ```
 
 ```bash
 # Build ros2 packages
+cd ${PAC_WS}
 colcon build --packages-select coveragecontrol_sim async_pac_gnn_py cc_rviz px4_homify
 ```
 
