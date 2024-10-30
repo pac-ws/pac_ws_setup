@@ -58,6 +58,7 @@ docker run -it \
   --restart=always \
   --pid=host \
   --env=ROS_NAMESPACE=${ROS_NAMESPACE} \
+  --env=RCUTILS_COLORIZED_OUTPUT=1 \
   ${VOLUME_OPTION} \
   --workdir=${CONTAINER_CC_WS} \
   ${IMAGE_NAME} \
