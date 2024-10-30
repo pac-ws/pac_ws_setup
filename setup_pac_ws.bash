@@ -54,6 +54,7 @@ REPOS=(
   "https://github.com/pac-ws/cc_rviz.git src/cc_rviz"
   "https://github.com/pac-ws/gcs.git src/gcs"
   "https://github.com/pac-ws/async_pac_gnn_py.git src/async_pac_gnn_py"
+  "https://github.com/pac-ws/async_pac_gnn_interfaces.git src/async_pac_gnn_interfaces"
   "https://github.com/pac-ws/coveragecontrol_sim.git src/coveragecontrol_sim"
   "https://github.com/wvat/starling_offboard_cpp.git src/starling_offboard_cpp"
   "https://github.com/wvat/starling_demos_cpp.git src/starling_demos_cpp"
