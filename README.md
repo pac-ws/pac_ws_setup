@@ -27,6 +27,6 @@ bash pac_create_container.sh -d ${PAC_WS} --ns ${ROS_NAMESPACE}
 ```bash
 # Build ros2 packages
 cd ${PAC_WS}
-colcon build --packages-select coveragecontrol_sim async_pac_gnn_py cc_rviz px4_homify
+colcon build --packages-select coveragecontrol_sim async_pac_gnn_py cc_rviz px4_homify starling_offboard_cpp starling_demos_cpp
 ```
 
