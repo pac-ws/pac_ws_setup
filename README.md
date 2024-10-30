@@ -91,7 +91,15 @@ Open `${PAC_WS}/launch/rviz.yaml` and note the following parameters.
 ```
 
 ### env_dir
-This is the directory inside `${PAC_WS}/configs`. The only relevant file is `idf_features` which speicifies how the importance points are distributed in the environment. Note that this has to be for $1024 \times 1024$ environment. So scale according to `env_scale_factor` (see below).
+This is the directory inside `${PAC_WS}/configs`. The only relevant file is `idf_features` which specifies how the importance points are distributed in the environment. Note that this has to be for $1024 \times 1024$ environment. So scale according to `env_scale_factor` (see below).  
+
+Format of `idf_features` file: recommended sigma: 50, recommended importance: 5
+```
+CircularBND
+x y sigma importance
+CircularBND
+x y sigma importance
+```
 
 ### namespaces_of_robots
 Set the namespaces of all robots that are part of the experiment. Don't put non-experiment robots. The system will wait for the `/ns/pose` to be published for each robot before doing anything.
