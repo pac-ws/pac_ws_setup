@@ -50,7 +50,7 @@ REPOS=(
   "https://github.com/pac-ws/pt.git pt"
   "https://github.com/pac-ws/launch.git launch"
   "https://github.com/pac-ws/configs.git configs"
-  "https://github.com/pac-ws/px4_homify.git src/px4_homify"
+  "https://github.com/wvat/px4_homify.git src/px4_homify"
   "https://github.com/pac-ws/cc_rviz.git src/cc_rviz"
   "https://github.com/pac-ws/gcs.git src/gcs"
   "https://github.com/pac-ws/async_pac_gnn_py.git src/async_pac_gnn_py"
