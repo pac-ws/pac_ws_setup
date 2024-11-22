@@ -15,10 +15,10 @@ eval set -- "$params"
 unset params
 
 IMAGE_BASE_NAME=agarwalsaurav/pac
-IMAGE_TAG=latest
+IMAGE_TAG=noble
 # Check if the OS architecture is arm64
 if [ "$(uname -m)" == "aarch64" ]; then
-  IMAGE_TAG=arm64
+  IMAGE_TAG=arm64-noble
 fi
 IMAGE_NAME="${IMAGE_BASE_NAME}:${IMAGE_TAG}"
 docker pull ${IMAGE_NAME}
