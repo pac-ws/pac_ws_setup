@@ -8,7 +8,7 @@ then
 fi
 
 print_usage() {
-  printf "bash $0 [-d|--directory <workspace directory>]\n"
+  printf "bash $0 [-d|--directory <workspace directory>] [-n|--name <container name>] [--ns <ROS namespace>]\n"
 }
 
 eval set -- "$params"
@@ -22,8 +22,7 @@ if [ "$(uname -m)" == "aarch64" ]; then
 fi
 IMAGE_NAME="${IMAGE_BASE_NAME}:${IMAGE_TAG}"
 docker pull ${IMAGE_NAME}
-WS_DIR="/data/pac_ws"
-
+# Check if $PAC_WS is set
 while true; do
   case ${1} in
     -d|--directory) WS_DIR=("${2}");shift 2;;
@@ -34,6 +33,17 @@ while true; do
       exit 1 ;;
   esac
 done
+
+if [ -z ${WS_DIR} ]; then
+  if [ -z ${PAC_WS} ]; then
+    echo "Please set the workspace directory using -d or --directory"
+    print_usage
+    exit 1
+  else
+    echo "Using workspace directory from PAC_WS: ${PAC_WS}"
+    WS_DIR=${PAC_WS}
+  fi
+fi
 
 CONTAINER_CC_WS="/workspace"
 
