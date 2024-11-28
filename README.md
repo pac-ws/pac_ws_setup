@@ -23,16 +23,13 @@ bash setup_pac_ws.bash -d ${PAC_WS}
 ```bash
 # Create container
 cd ${PAC_WS}/pac_ws_setup
-bash pac_create_container.sh -d ${PAC_WS} --ns ${ROS_NAMESPACE} -n gcs
-# Exit the container by pressing ctrl + D
+bash pac_create_container.sh -d ${PAC_WS} --ns ${ROS_NAMESPACE} -n gcs --noble
+# Use --humble for Ubuntu 22.04 with ROS2 humble
 ```
 
 ```bash
-# Enter the container
-docker exec -it gcs bash
-# Build ros2 packages
-cd ${PAC_WS}
-bash pac_ws_setup/gcs_build.bash -d ${PAC_WS}
+# Build ros2 pac packages
+docker exec gcs bash -ci pac_ws_setup/gcs_build.bash
 ```
 
 ## Setting up the robot
@@ -54,22 +51,18 @@ git clone https://github.com/pac-ws/pac_ws_setup.git ${PAC_WS}/pac_ws_setup
 ```bash
 # Clone repositories (Use this to also update the repositories)
 cd ${PAC_WS}/pac_ws_setup
-bash setup_pac_ws.bash -d ${PAC_WS}
+bash setup_pac_ws.bash
 ```
 
 ```bash
 # Create container
 cd ${PAC_WS}/pac_ws_setup
 bash pac_create_container.sh -d ${PAC_WS} --ns ${ROS_NAMESPACE}
-# Exit the container by pressing ctrl + D
 ```
 
 ```bash
-# Enter the container
-docker exec -it pac-$HOSTNAME bash
-# Build ros2 packages
-cd ${PAC_WS}
-bash pac_ws_setup/build.bash -d ${PAC_WS}
+# Build ros2 pac packages
+docker exec pac-$HOSTNAME bash -ci pac_ws_setup/build.bash
 ```
 
 ## Parameters to understand on GCS

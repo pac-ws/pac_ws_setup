@@ -97,7 +97,7 @@ fi
 
 # Run the Docker container
 echo "Starting Docker container: ${CONTAINER_NAME}"
-docker run -it \
+docker run -d -it --init \
   --name="${CONTAINER_NAME}" \
   --net=host \
   --privileged \
