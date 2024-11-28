@@ -29,7 +29,7 @@ bash pac_create_container.sh -d ${PAC_WS} --ns ${ROS_NAMESPACE} -n gcs --noble
 
 ```bash
 # Build ros2 pac packages
-docker exec gcs bash -ci pac_ws_setup/gcs_build.bash
+docker exec -it gcs bash -ci pac_ws_setup/gcs_build.bash
 ```
 
 ## Setting up the robot
@@ -62,7 +62,7 @@ bash pac_create_container.sh -d ${PAC_WS} --ns ${ROS_NAMESPACE}
 
 ```bash
 # Build ros2 pac packages
-docker exec pac-$HOSTNAME bash -ci pac_ws_setup/build.bash
+docker exec -it pac-$HOSTNAME bash -ci pac_ws_setup/build.bash
 ```
 
 ## Parameters to understand on GCS
