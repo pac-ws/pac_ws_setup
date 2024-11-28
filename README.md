@@ -51,13 +51,13 @@ git clone https://github.com/pac-ws/pac_ws_setup.git ${PAC_WS}/pac_ws_setup
 ```bash
 # Clone repositories (Use this to also update the repositories)
 cd ${PAC_WS}/pac_ws_setup
-bash setup_pac_ws.bash
+bash setup_pac_ws.bash -d ${PAC_WS}
 ```
 
 ```bash
 # Create container
 cd ${PAC_WS}/pac_ws_setup
-bash pac_create_container.sh -d ${PAC_WS} --ns ${ROS_NAMESPACE}
+bash pac_create_container.sh -d ${PAC_WS} --ns ${ROS_NAMESPACE} -n pac-$HOSTNAME --noble
 ```
 
 ```bash
