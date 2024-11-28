@@ -1,28 +1,78 @@
 #!/bin/bash
 
-# Function to display usage information
+# Exit immediately if a command exits with a non-zero status,
+# Treat unset variables as an error, and ensure pipelines fail correctly.
+set -euo pipefail
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Function to print usage information
 print_usage() {
-  echo "Usage: $0 [-d|--directory <workspace directory>] [-n|--name <container name>] [--ns <ROS namespace>] [--noble|--humble]"
+  cat <<EOF
+Usage: bash $(basename "$0") [OPTIONS]
+
+Options:
+  -d, --directory <workspace directory>  Specify the workspace directory
+  -n, --name <container name>            Specify the container name
+      --ns <ROS namespace>               Specify the ROS namespace
+      --noble                            Use 'noble' image tag (default)
+      --humble                           Use 'humble' image tag
+  -h, --help                             Display this help message
+
+Examples:
+  bash $(basename "$0") -d \${PAC_WS} --ns \${ROS_NAMESPACE} -n gcs --noble
+  bash $(basename "$0") -d \${PAC_WS} --ns \${ROS_NAMESPACE} -n pac-${HOSTNAME} --humble
+EOF
 }
 
-# Parse and validate input parameters
-params="$(getopt -o d:n: -l directory:,ns:,name:,noble,humble --name "$(basename "$0")" -- "$@")"
-if [ $? -ne 0 ]; then
-  echo "Error parsing parameters."
+# Function to check if a command exists
+command_exists() {
+  command -v "$1" >/dev/null 2>&1
+}
+
+# Function to handle errors
+error_exit() {
+  echo -e "${RED}Error: $1${NC}" >&2
+  exit 1
+}
+#
+# Function to display informational messages
+info_message() {
+  echo -e "${BLUE}$1${NC}"
+}
+
+# Ensure required commands are available
+for cmd in docker getopt; do
+  if ! command_exists "$cmd"; then
+    error_exit "'$cmd' command is not found. Please install it before running this script."
+  fi
+done
+
+# Define short and long options
+SHORT_OPTS="d:n:h"
+LONG_OPTS="directory:,name:,ns:,noble,humble,help"
+
+# Parse options using getopt
+PARSED_PARAMS=$(getopt --options "$SHORT_OPTS" --long "$LONG_OPTS" --name "$(basename "$0")" -- "$@") || {
+  echo "Failed to parse arguments." >&2
   print_usage
   exit 1
-fi
+}
 
-eval set -- "$params"
-unset params
+# Evaluate the parsed options
+eval set -- "$PARSED_PARAMS"
 
-# Default values
-IMAGE_TAG="noble"
-CONTAINER_NAME=""
+# Initialize variables with default values
+IMAGE_TAG=""
 WS_DIR=""
+CONTAINER_NAME=""
 ROS_NAMESPACE=""
 
-# Parse options
+# Process parsed options
 while true; do
   case "$1" in
     -d|--directory)
@@ -38,6 +88,9 @@ while true; do
       shift
       ;;
     --humble)
+      if [[ "$IMAGE_TAG" == "noble" ]]; then
+        error_exit "Cannot use both 'noble' and 'humble' image tags."
+      fi
       IMAGE_TAG="humble"
       shift
       ;;
@@ -45,36 +98,46 @@ while true; do
       ROS_NAMESPACE="$2"
       shift 2
       ;;
+    -h|--help)
+      print_usage
+      exit 0
+      ;;
     --)
       shift
       break
       ;;
     *)
-      echo "Unknown option: $1"
+      echo "Internal error: unexpected option '$1'" >&2
       print_usage
       exit 1
       ;;
   esac
 done
 
-# Set base image name and handle architecture-specific tags
+if [[ -z "$IMAGE_TAG" ]]; then
+  info_message "Using 'noble' image tag by default."
+  IMAGE_TAG="noble"
+fi
+
 IMAGE_BASE_NAME="agarwalsaurav/pac"
-if [ "$(uname -m)" == "aarch64" ]; then
+
+ARCH=$(uname -m)
+if [[ "$ARCH" == "aarch64" ]]; then
   IMAGE_TAG="arm64-${IMAGE_TAG}"
 fi
+
 IMAGE_NAME="${IMAGE_BASE_NAME}:${IMAGE_TAG}"
 
 # Pull the Docker image
 echo "Pulling Docker image: ${IMAGE_NAME}"
-docker pull "${IMAGE_NAME}" || {
-  echo "Failed to pull Docker image: ${IMAGE_NAME}"
-  exit 1
-}
+if ! docker pull "${IMAGE_NAME}"; then
+  error_exit "Failed to pull Docker image: ${IMAGE_NAME}"
+fi
 
-# Validate workspace directory
-if [ -z "${WS_DIR}" ]; then
-  if [ -z "${PAC_WS}" ]; then
-    echo "Error: Workspace directory must be specified using -d or --directory, or the PAC_WS environment variable must be set."
+# Determine the workspace directory
+if [[ -z "$WS_DIR" ]]; then
+  if [[ -z "${PAC_WS:-}" ]]; then
+    echo "Workspace directory not provided via -d/--directory and PAC_WS is not set."
     print_usage
     exit 1
   else
@@ -83,36 +146,69 @@ if [ -z "${WS_DIR}" ]; then
   fi
 fi
 
-# Set default container name if not provided
-if [ -z "${CONTAINER_NAME}" ]; then
+# Verify that the workspace directory exists
+if [[ ! -d "$WS_DIR" ]]; then
+  error_exit "Workspace directory '$WS_DIR' does not exist."
+fi
+
+CONTAINER_CC_WS="/workspace"
+
+# Set volume option with proper quoting
+VOLUME_OPTION="-v \"${WS_DIR}:${CONTAINER_CC_WS}:rw\""
+
+# Set container name if not provided
+if [[ -z "$CONTAINER_NAME" ]]; then
   CONTAINER_NAME="pac-${HOSTNAME}"
 fi
 
-# Configure volume option for Docker
-if [ -n "${WS_DIR}" ]; then
-  VOLUME_OPTION="-v ${WS_DIR}:/workspace:rw"
-else
-  VOLUME_OPTION=""
+# Check if a container with the same name already exists
+if docker ps -a --format '{{.Names}}' | grep -Eq "^${CONTAINER_NAME}\$"; then
+  echo "A container named '${CONTAINER_NAME}' already exists."
+  read -rp "Do you want to remove the existing container and create a new one? [y/N]: " response
+  case "$response" in
+    [Yy]* )
+      docker stop "${CONTAINER_NAME}" && docker rm "${CONTAINER_NAME}" || error_exit "Failed to remove existing container."
+      ;;
+    * )
+      echo "Exiting without creating a new container."
+      exit 0
+      ;;
+  esac
 fi
 
-# Run the Docker container
-echo "Starting Docker container: ${CONTAINER_NAME}"
-docker run -d -it --init \
-  --name="${CONTAINER_NAME}" \
-  --net=host \
-  --privileged \
-  --ipc=host \
-  --restart=always \
-  --pid=host \
-  --env=ROS_NAMESPACE="${ROS_NAMESPACE}" \
-  --env=RCUTILS_COLORIZED_OUTPUT=1 \
-  --env=PAC_WS="/workspace" \
-  ${VOLUME_OPTION} \
-  --workdir="/workspace" \
-  "${IMAGE_NAME}" \
-  bash || {
-  echo "Failed to start Docker container: ${CONTAINER_NAME}"
-  exit 1
-}
+# Initialize Docker run command as an array for safety
+DOCKER_RUN_CMD=(
+  docker run -it
+  --name "${CONTAINER_NAME}"
+  --net=host
+  --privileged
+  --ipc=host
+  --restart=always
+  --pid=host
+  --env "RCUTILS_COLORIZED_OUTPUT=1"
+  --env "PAC_WS=${CONTAINER_CC_WS}"
+  --workdir "${CONTAINER_CC_WS}"
+)
 
-echo "Docker container '${CONTAINER_NAME}' started successfully."
+# Add ROS_NAMESPACE if provided
+if [[ -n "$ROS_NAMESPACE" ]]; then
+  DOCKER_RUN_CMD+=(--env "ROS_NAMESPACE=${ROS_NAMESPACE}")
+fi
+
+# Add volume option
+DOCKER_RUN_CMD+=(-v "${WS_DIR}:${CONTAINER_CC_WS}:rw")
+
+# Append the image name and the command to run inside the container
+DOCKER_RUN_CMD+=("${IMAGE_NAME}" bash)
+
+# ----------------------------
+# Execute Docker Run
+# ----------------------------
+
+echo "Running Docker container with the following command:"
+printf "  %q " "${DOCKER_RUN_CMD[@]}"
+echo
+
+# Execute the Docker run command
+"${DOCKER_RUN_CMD[@]}"
+
