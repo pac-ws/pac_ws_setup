@@ -142,10 +142,6 @@ REPOS=(
   "${REPOS_PREFIX}pac-ws/starling_demos_cpp.git src/starling_demos_cpp"
 )
 
-for ENTRY in "${REPOS[@]}"; do
-  echo "$ENTRY"
-done
-
 # ----------------------------
 # Processing Repositories
 # ----------------------------

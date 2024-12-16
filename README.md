@@ -18,6 +18,7 @@ git clone https://github.com/pac-ws/pac_ws_setup.git ${PAC_WS}/pac_ws_setup
 # Clone repositories (Use this to also update the repositories)
 cd ${PAC_WS}/pac_ws_setup
 bash setup_pac_ws.bash -d ${PAC_WS}
+# add --dev for cloning using ssh instead of https
 ```
 
 ```bash
