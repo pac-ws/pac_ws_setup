@@ -65,10 +65,23 @@ fi
 # Initialize PAC_WS
 PAC_WS=""
 
-while getopts ":d:" opt; do
+DEV_MODE=0  # Default: development mode off
+
+while getopts ":d:-:" opt; do
   case $opt in
     d)
       PAC_WS="$OPTARG"
+      ;;
+    -)  # Handle long options
+      case "$OPTARG" in
+        dev)
+          DEV_MODE=1
+          ;;
+        *)
+          echo -e "${RED}Invalid option: --$OPTARG${NC}" >&2
+          usage
+          ;;
+      esac
       ;;
     \?)
       echo -e "${RED}Invalid option: -$OPTARG${NC}" >&2
@@ -80,6 +93,11 @@ while getopts ":d:" opt; do
       ;;
   esac
 done
+
+# Debugging or additional actions based on the --dev flag
+if [ $DEV_MODE -eq 1 ]; then
+  echo "Development mode enabled."
+fi
 
 # Check if PAC_WS is set
 if [ -z "${PAC_WS}" ]; then
@@ -105,20 +123,28 @@ fi
 
 # List of repositories and their relative target directories
 # Each entry is an array with two elements: REPO_URL and RELATIVE_TARGET_DIR
+REPOS_PREFIX="https://github.com/"
+if [ $DEV_MODE -eq 1 ]; then
+  REPOS_PREFIX="git@github.com:"
+fi
 REPOS=(
-  "https://github.com/pac-ws/pac_ws_setup.git pac_ws_setup"
-  "https://github.com/pac-ws/pt.git pt"
-  "https://github.com/pac-ws/launch.git launch"
-  "https://github.com/pac-ws/configs.git configs"
-  "https://github.com/pac-ws/px4_homify.git src/px4_homify"
-  "https://github.com/pac-ws/cc_rviz.git src/cc_rviz"
-  "https://github.com/pac-ws/gcs.git src/gcs"
-  "https://github.com/pac-ws/async_pac_gnn_py.git src/async_pac_gnn_py"
-  "https://github.com/pac-ws/async_pac_gnn_interfaces.git src/async_pac_gnn_interfaces"
-  "https://github.com/pac-ws/coveragecontrol_sim.git src/coveragecontrol_sim"
-  "https://github.com/pac-ws/starling_offboard_cpp.git src/starling_offboard_cpp"
-  "https://github.com/pac-ws/starling_demos_cpp.git src/starling_demos_cpp"
+  "${REPOS_PREFIX}pac-ws/pac_ws_setup.git pac_ws_setup"
+  "${REPOS_PREFIX}pac-ws/pt.git pt"
+  "${REPOS_PREFIX}pac-ws/launch.git launch"
+  "${REPOS_PREFIX}pac-ws/configs.git configs"
+  "${REPOS_PREFIX}pac-ws/px4_homify.git src/px4_homify"
+  "${REPOS_PREFIX}pac-ws/cc_rviz.git src/cc_rviz"
+  "${REPOS_PREFIX}pac-ws/gcs.git src/gcs"
+  "${REPOS_PREFIX}pac-ws/async_pac_gnn_py.git src/async_pac_gnn_py"
+  "${REPOS_PREFIX}pac-ws/async_pac_gnn_interfaces.git src/async_pac_gnn_interfaces"
+  "${REPOS_PREFIX}pac-ws/coveragecontrol_sim.git src/coveragecontrol_sim"
+  "${REPOS_PREFIX}pac-ws/starling_offboard_cpp.git src/starling_offboard_cpp"
+  "${REPOS_PREFIX}pac-ws/starling_demos_cpp.git src/starling_demos_cpp"
 )
+
+for ENTRY in "${REPOS[@]}"; do
+  echo "$ENTRY"
+done
 
 # ----------------------------
 # Processing Repositories
