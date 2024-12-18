@@ -59,11 +59,14 @@ bash setup_pac_ws.bash -d ${PAC_WS}
 # Create container
 cd ${PAC_WS}/pac_ws_setup
 bash pac_create_container.sh -d ${PAC_WS} --ns ${ROS_NAMESPACE} -n pac-$HOSTNAME --noble
+# Use --humble for Ubuntu 22.04 with ROS2 humble
+# You can alternatively run ${PAC_WS}/launch/run_gcs.bash --create
 ```
 
 ```bash
 # Build ros2 pac packages
 docker exec -it pac-$HOSTNAME bash -ci pac_ws_setup/build.bash
+# You can alternatively run ${PAC_WS}/launch/run_gcs.bash --build
 ```
 
 ## Parameters to understand on GCS
@@ -107,25 +110,35 @@ The model predicts max velocity to be $5 m/s$. The systems scales the predicted 
 ## Running ros2 launch files
 
 ### GCS
+The file `${PAC_WS}/launch/run_gcs.bash` supports the following.
+Do this separately in different terminals.
 ```bash
-# Run rviz and coverage control sim
-xhost + # might not work on wayland
-docker exec -it gcs bash
-# You should be inside /workspace
-export DISPLAY=:0 # maybe :1, check echo $DISPLAY outside docker
-ros2 launch launch/rviz.yaml
-```
-
-```bash
-# Run status_pac
-ros2 run gcs status_pac
-# Enter 0 when you want to move robots
-# Enter 1 for sending zero velocities
-# Enter 2 for stop lpac from publishing to cmd_vel
+# Get the bash terminal inside the docker
+bash run_gcs.bash --bash
+# Run the gcs_origin launch file
+bash run_gcs.bash --origin
+# Run the status_pac node
+bash run_gcs.bash --pac
+# Run the rviz launch file
+bash run_gcs.bash --rviz
+# Run the lpac centralized coverage controller
+bash run_gcs.bash --lpac
 ```
 
 ### Robots
+Run `gps_fix` from `px4_homify` package and `offboard.launch` from `starling_offboard_cpp`:
+
 ```bash
 docker exec -it pac-$HOSTNAME bash
-ros2 launch launch/lpac_l1.yaml
+ros2 launch launch/starling_offboard.yaml`
+```
+
+#### For PX4 simulation
+The following commands will create docker containers and automatically launch `starling_offboard.yaml`.
+```bash
+cd ${PAC_WS}/launch/offboard_sim
+bash create_docker_compose.bash <number_of_robots>
+docker compose up
+# Use docker compose up -d to run in background
+# Use docker compose down to stop
 ```
