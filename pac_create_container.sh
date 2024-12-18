@@ -21,6 +21,7 @@ Options:
       --ns <ROS namespace>               Specify the ROS namespace
       --noble                            Use 'noble' image tag (default)
       --humble                           Use 'humble' image tag
+  -i, --id                               Specify ROBOT_ID (default: 1) 
   -h, --help                             Display this help message
 
 Examples:
@@ -71,6 +72,7 @@ IMAGE_TAG=""
 WS_DIR=""
 CONTAINER_NAME=""
 ROS_NAMESPACE=""
+ROBOT_ID=1
 
 # Process parsed options
 while true; do
@@ -81,6 +83,10 @@ while true; do
       ;;
     -n|--name)
       CONTAINER_NAME="$2"
+      shift 2
+      ;;
+    -i|--id)
+      ROBOT_ID="$2"
       shift 2
       ;;
     --noble)
@@ -198,17 +204,16 @@ fi
 # Add volume option
 DOCKER_RUN_CMD+=(-v "${WS_DIR}:${CONTAINER_CC_WS}:rw")
 
+# Add ROBOT_ID
+DOCKER_RUN_CMD+=(--env "ROBOT_ID=${ROBOT_ID}")
+
 # Append the image name and the command to run inside the container
 DOCKER_RUN_CMD+=("${IMAGE_NAME}" bash)
 
-# ----------------------------
-# Execute Docker Run
-# ----------------------------
 
 echo "Running Docker container with the following command:"
 printf "  %q " "${DOCKER_RUN_CMD[@]}"
 echo
 
-# Execute the Docker run command
 "${DOCKER_RUN_CMD[@]}"
 
