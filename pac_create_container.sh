@@ -184,7 +184,7 @@ fi
 
 # Initialize Docker run command as an array for safety
 DOCKER_RUN_CMD=(
-  docker run -it
+  docker run -it -d --init
   --name "${CONTAINER_NAME}"
   --net=host
   --privileged
