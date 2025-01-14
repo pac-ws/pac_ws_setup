@@ -54,8 +54,8 @@ for cmd in docker getopt; do
 done
 
 # Define short and long options
-SHORT_OPTS="d:n:h"
-LONG_OPTS="directory:,name:,ns:,noble,humble,help"
+SHORT_OPTS="d:n:i:h"
+LONG_OPTS="directory:,name:,ns:,noble,humble,id:,help"
 
 # Parse options using getopt
 PARSED_PARAMS=$(getopt --options "$SHORT_OPTS" --long "$LONG_OPTS" --name "$(basename "$0")" -- "$@") || {
