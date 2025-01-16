@@ -21,6 +21,7 @@ Options:
       --ns <ROS namespace>               Specify the ROS namespace
       --noble                            Use 'noble' image tag (default)
       --humble                           Use 'humble' image tag
+      --gpu                              Enable GPU support
   -i, --id                               Specify ROBOT_ID (default: 1) 
   -h, --help                             Display this help message
 
@@ -55,7 +56,7 @@ done
 
 # Define short and long options
 SHORT_OPTS="d:n:i:h"
-LONG_OPTS="directory:,name:,ns:,noble,humble,id:,help"
+LONG_OPTS="directory:,name:,ns:,gpu,noble,humble,id:,help"
 
 # Parse options using getopt
 PARSED_PARAMS=$(getopt --options "$SHORT_OPTS" --long "$LONG_OPTS" --name "$(basename "$0")" -- "$@") || {
@@ -73,6 +74,7 @@ WS_DIR=""
 CONTAINER_NAME=""
 ROS_NAMESPACE=""
 ROBOT_ID=1
+USE_GPU=false
 
 # Process parsed options
 while true; do
@@ -84,6 +86,10 @@ while true; do
     -n|--name)
       CONTAINER_NAME="$2"
       shift 2
+      ;;
+    --gpu)
+      USE_GPU=true
+      shift
       ;;
     -i|--id)
       ROBOT_ID="$2"
@@ -206,6 +212,13 @@ DOCKER_RUN_CMD+=(-v "${WS_DIR}:${CONTAINER_CC_WS}:rw")
 
 # Add ROBOT_ID
 DOCKER_RUN_CMD+=(--env "ROBOT_ID=${ROBOT_ID}")
+
+if [[ "$USE_GPU" == true ]]; then
+  info_message "Enabling GPU support..."
+  DOCKER_RUN_CMD+=(--gpus all)
+  DOCKER_RUN_CMD+=(--env "NVIDIA_VISIBLE_DEVICES=all")
+  DOCKER_RUN_CMD+=(--env "NVIDIA_DRIVER_CAPABILITIES=all")
+fi
 
 # Append the image name and the command to run inside the container
 DOCKER_RUN_CMD+=("${IMAGE_NAME}" bash)
