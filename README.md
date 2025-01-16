@@ -26,6 +26,7 @@ bash setup_pac_ws.bash -d ${PAC_WS}
 cd ${PAC_WS}/pac_ws_setup
 bash pac_create_container.sh -d ${PAC_WS} --ns ${ROS_NAMESPACE} -n gcs --noble
 # Use --humble for Ubuntu 22.04 with ROS2 humble
+# Use --gpu for Nvidia GPU support
 ```
 
 ```bash
