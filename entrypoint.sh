@@ -1,7 +1,9 @@
 #!/bin/bash
 echo "ROS_NAMESPACE: $ROS_NAMESPACE"
 echo "ROS_DOMAIN_ID: $ROS_DOMAIN_ID"
+echo "PYTHON_VERSION: $PYTHON_VERSION"
 source /workspace/install/setup.bash
+export PYTHONPATH=/opt/venv/lib/python${PYTHON_VERSION}/site-packages:$PYTHONPATH
 # if ROS_NAMESPACE is gcs, then launch gcs_origin.yaml
 if [ "$ROS_NAMESPACE" == "gcs" ]; then
   ros2 launch /workspace/launch/gcs_origin.yaml
