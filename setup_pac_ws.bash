@@ -133,14 +133,22 @@ REPOS=(
   "${REPOS_PREFIX}pac-ws/launch.git launch"
   "${REPOS_PREFIX}pac-ws/configs.git configs"
   "${REPOS_PREFIX}pac-ws/px4_homify.git src/px4_homify"
-  "${REPOS_PREFIX}pac-ws/cc_rviz.git src/cc_rviz"
-  "${REPOS_PREFIX}pac-ws/gcs.git src/gcs"
   "${REPOS_PREFIX}pac-ws/async_pac_gnn_py.git src/async_pac_gnn_py"
   "${REPOS_PREFIX}pac-ws/async_pac_gnn_interfaces.git src/async_pac_gnn_interfaces"
   "${REPOS_PREFIX}pac-ws/coveragecontrol_sim.git src/coveragecontrol_sim"
   "${REPOS_PREFIX}pac-ws/starling_offboard_cpp.git src/starling_offboard_cpp"
   "${REPOS_PREFIX}pac-ws/starling_demos_cpp.git src/starling_demos_cpp"
 )
+
+if [ $DEV_MODE -eq 1 ]; then
+  REPOS+=(
+    "${REPOS_PREFIX}pac-ws/docker.git docker"
+    "${REPOS_PREFIX}pac-ws/starling_scripts.git starling_scripts"
+    "${REPOS_PREFIX}pac-ws/px4_multi_sim.git src/px4_multi_sim"
+    "${REPOS_PREFIX}pac-ws/cc_rviz.git src/cc_rviz"
+    "${REPOS_PREFIX}pac-ws/gcs.git src/gcs"
+  )
+fi
 
 # ----------------------------
 # Processing Repositories
