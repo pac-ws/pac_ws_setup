@@ -199,6 +199,7 @@ DOCKER_RUN_CMD=(
   --pid=host
   --env "RCUTILS_COLORIZED_OUTPUT=1"
   --env "PAC_WS=${CONTAINER_CC_WS}"
+  --env "ROS_DOMAIN_ID=10"
   --workdir "${CONTAINER_CC_WS}"
 )
 
@@ -219,6 +220,9 @@ if [[ "$USE_GPU" == true ]]; then
   DOCKER_RUN_CMD+=(--env "NVIDIA_VISIBLE_DEVICES=all")
   DOCKER_RUN_CMD+=(--env "NVIDIA_DRIVER_CAPABILITIES=all")
 fi
+
+# Add entrypoint
+DOCKER_RUN_CMD+=(--entrypoint /workspace/pac_ws_setup/entrypoint.sh)
 
 # Append the image name and the command to run inside the container
 DOCKER_RUN_CMD+=("${IMAGE_NAME}" bash)
