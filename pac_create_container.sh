@@ -19,14 +19,14 @@ Options:
   -d, --directory <workspace directory>  Specify the workspace directory
   -n, --name <container name>            Specify the container name
       --ns <ROS namespace>               Specify the ROS namespace
-      --noble                            Use 'noble' image tag (default)
+      --jazzy                            Use 'jazzy' image tag (default)
       --humble                           Use 'humble' image tag
       --gpu                              Enable GPU support
   -i, --id                               Specify ROBOT_ID (default: 1) 
   -h, --help                             Display this help message
 
 Examples:
-  bash $(basename "$0") -d \${PAC_WS} --ns \${ROS_NAMESPACE} -n gcs --noble
+  bash $(basename "$0") -d \${PAC_WS} --ns \${ROS_NAMESPACE} -n gcs --jazzy
   bash $(basename "$0") -d \${PAC_WS} --ns \${ROS_NAMESPACE} -n pac-${HOSTNAME} --humble
 EOF
 }
@@ -56,7 +56,7 @@ done
 
 # Define short and long options
 SHORT_OPTS="d:n:i:h"
-LONG_OPTS="directory:,name:,ns:,gpu,noble,humble,id:,help"
+LONG_OPTS="directory:,name:,ns:,gpu,jazzy,humble,id:,help"
 
 # Parse options using getopt
 PARSED_PARAMS=$(getopt --options "$SHORT_OPTS" --long "$LONG_OPTS" --name "$(basename "$0")" -- "$@") || {
@@ -95,13 +95,13 @@ while true; do
       ROBOT_ID="$2"
       shift 2
       ;;
-    --noble)
-      IMAGE_TAG="noble"
+    --jazzy)
+      IMAGE_TAG="jazzy"
       shift
       ;;
     --humble)
-      if [[ "$IMAGE_TAG" == "noble" ]]; then
-        error_exit "Cannot use both 'noble' and 'humble' image tags."
+      if [[ "$IMAGE_TAG" == "jazzy" ]]; then
+        error_exit "Cannot use both 'jazzy' and 'humble' image tags."
       fi
       IMAGE_TAG="humble"
       shift
@@ -127,8 +127,8 @@ while true; do
 done
 
 if [[ -z "$IMAGE_TAG" ]]; then
-  info_message "Using 'noble' image tag by default."
-  IMAGE_TAG="noble"
+  info_message "Using 'jazzy' image tag by default."
+  IMAGE_TAG="jazzy"
 fi
 
 IMAGE_BASE_NAME="agarwalsaurav/pac"

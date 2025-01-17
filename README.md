@@ -24,7 +24,7 @@ bash setup_pac_ws.bash -d ${PAC_WS}
 ```bash
 # Create container
 cd ${PAC_WS}/pac_ws_setup
-bash pac_create_container.sh -d ${PAC_WS} --ns ${ROS_NAMESPACE} -n gcs --noble
+bash pac_create_container.sh -d ${PAC_WS} --ns ${ROS_NAMESPACE} -n gcs --jazzy
 # Use --humble for Ubuntu 22.04 with ROS2 humble
 # Use --gpu for Nvidia GPU support
 ```
@@ -59,7 +59,7 @@ bash setup_pac_ws.bash -d ${PAC_WS}
 ```bash
 # Create container
 cd ${PAC_WS}/pac_ws_setup
-bash pac_create_container.sh -d ${PAC_WS} --ns ${ROS_NAMESPACE} -n pac-$HOSTNAME --noble
+bash pac_create_container.sh -d ${PAC_WS} --ns ${ROS_NAMESPACE} -n pac-$HOSTNAME --jazzy
 # Use --humble for Ubuntu 22.04 with ROS2 humble
 # You can alternatively run ${PAC_WS}/launch/run_gcs.bash --create
 ```
