@@ -4,6 +4,10 @@ echo "ROS_NAMESPACE: $ROS_NAMESPACE"
 echo "ROS_DOMAIN_ID: $ROS_DOMAIN_ID"
 echo "PYTHON_VERSION: $PYTHON_VERSION"
 
+if [[ "$ROS_NAMESPACE" =~ ^r[0-9]+$ ]]; then
+  bash /workspace/pac_ws_setup/starling_build.bash
+fi
+
 if ! source /workspace/install/setup.bash; then
   echo "Failed to source /workspace/install/setup.bash"
   exit 1
