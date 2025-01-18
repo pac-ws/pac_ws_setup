@@ -14,14 +14,7 @@ while true; do
         | awk '{print $2}' \
         | sed 's/addr://')
 
-  # If $IP is non-empty and doesn't start with 192.168.0., break.
-  if [[ -n "$IP" && ! "$IP" =~ ^192\.168\.0\. ]]; then
-    echo "Assigned IP: $IP"
-    break
-  fi
-
-  echo "Current IP is '$IP'. Waiting..."
-  sleep 1
+  sleep 5
 done
 
 # Once we reach here, hostname -I should return something like '172.17.0.2'
