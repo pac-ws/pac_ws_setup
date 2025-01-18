@@ -1,5 +1,4 @@
-#!/bin/bash
-
+#!/usr/bin/env bash
 date
 echo "ROS_NAMESPACE: $ROS_NAMESPACE"
 echo "ROS_DOMAIN_ID: $ROS_DOMAIN_ID"
@@ -9,11 +8,15 @@ echo "PYTHON_VERSION: $PYTHON_VERSION"
 while true; do
   # Extract the IP (IPv4) address for wlan0 from ifconfig output.
   # Depending on your OS, 'inet ' might appear as 'inet addr:' – adjust as needed.
-  IP=$(ifconfig wlan0 2>/dev/null \
+  IP=$(ifconfig wlp0s20f3 2>/dev/null \
         | grep 'inet ' \
         | awk '{print $2}' \
         | sed 's/addr://')
 
+  if [[ -n "$IP" &&  "$IP" =~ ^192\.168\.0\. ]]; then
+    echo "Assigned IP: $IP"
+    break
+  fi
   sleep 5
 done
 
