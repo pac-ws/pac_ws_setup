@@ -8,7 +8,7 @@ echo "PYTHON_VERSION: $PYTHON_VERSION"
 while true; do
   # Extract the IP (IPv4) address for wlan0 from ifconfig output.
   # Depending on your OS, 'inet ' might appear as 'inet addr:' – adjust as needed.
-  IP=$(ifconfig wlp0s20f3 2>/dev/null \
+  IP=$(ifconfig wlan0 2>/dev/null \
         | grep 'inet ' \
         | awk '{print $2}' \
         | sed 's/addr://')
