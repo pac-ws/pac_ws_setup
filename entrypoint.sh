@@ -5,7 +5,15 @@ echo "ROS_NAMESPACE: $ROS_NAMESPACE"
 echo "ROS_DOMAIN_ID: $ROS_DOMAIN_ID"
 echo "ROS_DISTRO: $ROS_DISTRO"
 echo "PYTHON_VERSION: $PYTHON_VERSION"
+#
+# Wait for a non-empty IP address
+while [ -z "$(hostname -I)" ]; do
+  echo "Waiting for an IP address to be assigned..."
+  sleep 1
+done
 
+# Once we reach here, hostname -I should return something like '172.17.0.2'
+echo "IP address detected: $(hostname -I)"
 if [[ "$ROS_NAMESPACE" =~ ^r[0-9]+$ ]]; then
   source /opt/ros/$ROS_DISTRO/setup.bash
   source /opt/ros/extra/install/local_setup.bash
