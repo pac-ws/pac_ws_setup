@@ -147,6 +147,7 @@ if [ $DEV_MODE -eq 1 ]; then
     "${REPOS_PREFIX}pac-ws/px4_multi_sim.git src/px4_multi_sim"
     "${REPOS_PREFIX}pac-ws/cc_rviz.git src/cc_rviz"
     "${REPOS_PREFIX}pac-ws/gcs.git src/gcs"
+    "${REPOS_PREFIX}pac-ws/rviz_pac_panel.git src/rviz_pac_panel"
   )
 fi
 
