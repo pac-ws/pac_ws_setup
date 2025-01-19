@@ -58,12 +58,12 @@ done
 # Parse Command-line Arguments
 # ----------------------------
 
-if [[ $# -eq 0 ]]; then
-  usage
-fi
+# if [[ $# -eq 0 ]]; then
+#   usage
+# fi
 
 # Initialize PAC_WS
-PAC_WS=""
+# PAC_WS=""
 
 DEV_MODE=0  # Default: development mode off
 
@@ -93,6 +93,23 @@ while getopts ":d:-:" opt; do
       ;;
   esac
 done
+
+# Check if $ROS_NAMESPACE is set
+if [ -z "${ROS_NAMESPACE}" ]; then
+  info_message "ROS_NAMESPACE is not set. Can't check if it is gcs."
+else
+  if [ "${ROS_NAMESPACE}" == "gcs" ]; then
+    # Check if user wants to set DEV_MODE to 1
+    if [ $DEV_MODE -eq 0 ]; then
+      read -p "ROS_NAMESPACE is set to 'gcs'. Do you want to enable development mode? [y/N]: " response
+      if [[ "$response" =~ ^([yY][eE][sS]|[yY])+$ ]]; then
+        DEV_MODE=1
+      fi
+    fi
+  fi
+fi
+
+info_message "PAC_WS: $PAC_WS"
 
 # Debugging or additional actions based on the --dev flag
 if [ $DEV_MODE -eq 1 ]; then
