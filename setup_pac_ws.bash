@@ -118,7 +118,7 @@ fi
 
 # Check if PAC_WS is set
 if [ -z "${PAC_WS}" ]; then
-  error_exit "The -d <directory> argument is required."
+  error_exit "PAC_WS not set: Either set PAC_WS  as environment variable or use -d <directory> argument"
 fi
 
 # Ensure PAC_WS is an absolute path
