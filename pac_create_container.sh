@@ -221,8 +221,10 @@ if [[ "$USE_GPU" == true ]]; then
   DOCKER_RUN_CMD+=(--env "NVIDIA_DRIVER_CAPABILITIES=all")
 fi
 
-# Add entrypoint
-DOCKER_RUN_CMD+=(--entrypoint /workspace/pac_ws_setup/entrypoint.sh)
+# Add entrypoint if ROS_NAMESPACE has the pattern r[0-9]+
+if [[ "$ROS_NAMESPACE" =~ ^r[0-9]+$ ]]; then
+  DOCKER_RUN_CMD+=(--entrypoint /workspace/pac_ws_setup/entrypoint.sh)
+fi
 
 # Append the image name and the command to run inside the container
 DOCKER_RUN_CMD+=("${IMAGE_NAME}" bash)
