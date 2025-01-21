@@ -98,10 +98,10 @@ done
 if [ -z "${ROS_NAMESPACE}" ]; then
   info_message "ROS_NAMESPACE is not set. Can't check if it is gcs."
 else
-  if [ "${ROS_NAMESPACE}" == "gcs" ]; then
+  if [[ "$ROS_NAMESPACE" =~ ^gcs.*$ ]]; then
     # Check if user wants to set DEV_MODE to 1
     if [ $DEV_MODE -eq 0 ]; then
-      read -p "ROS_NAMESPACE is set to 'gcs'. Do you want to enable development mode? [y/N]: " response
+      read -p "ROS_NAMESPACE is set to 'gcs.*'. Do you want to enable development mode? [y/N]: " response
       if [[ "$response" =~ ^([yY][eE][sS]|[yY])+$ ]]; then
         DEV_MODE=1
       fi
@@ -159,17 +159,20 @@ REPOS=(
 
 if [ $DEV_MODE -eq 1 ]; then
   REPOS+=(
-    "${REPOS_PREFIX}pac-ws/docker.git docker"
-    "${REPOS_PREFIX}pac-ws/starling_scripts.git starling_scripts"
-    "${REPOS_PREFIX}pac-ws/px4_multi_sim.git px4_multi_sim"
-    "${REPOS_PREFIX}pac-ws/gcs.git src/gcs"
-    "${REPOS_PREFIX}pac-ws/rviz_pac.git src/rviz_pac"
-  )
+  "${REPOS_PREFIX}pac-ws/docker.git docker"
+  "${REPOS_PREFIX}pac-ws/starling_scripts.git starling_scripts"
+  "${REPOS_PREFIX}pac-ws/px4_multi_sim.git px4_multi_sim"
+  "${REPOS_PREFIX}pac-ws/gcs.git src/gcs"
+  "${REPOS_PREFIX}pac-ws/rviz_pac.git src/rviz_pac"
+)
 fi
 
 # ----------------------------
 # Processing Repositories
 # ----------------------------
+
+MAIN_DIRS=""
+SRC_DIRS=""
 
 for ENTRY in "${REPOS[@]}"; do
   # Skip empty lines or lines starting with '#'
@@ -180,6 +183,13 @@ for ENTRY in "${REPOS[@]}"; do
 
   # Combine PAC_WS and RELATIVE_TARGET_DIR to get the absolute target directory
   TARGET_DIR="${PAC_WS}/${RELATIVE_TARGET_DIR}"
+  # if target directory starts with src, add it to the SRC_DIRS list
+  # else add it to the MAIN_DIRS list
+  if [[ "$RELATIVE_TARGET_DIR" == src* ]]; then
+    SRC_DIRS="$SRC_DIRS $TARGET_DIR"
+  else
+    MAIN_DIRS="$MAIN_DIRS $TARGET_DIR"
+  fi
 
   info_message "Processing repository '$REPO_URL' at '$TARGET_DIR'..."
 
@@ -207,6 +217,10 @@ for ENTRY in "${REPOS[@]}"; do
         # If the directory was pac_ws_setup, print warning to re-run setup_pac_ws.bash
         if [[ "$RELATIVE_TARGET_DIR" == "pac_ws_setup" ]]; then
           echo -e "${RED}Please re-run the setup_pac_ws.bash script to ensure the changes are applied.${NC}"
+          read -p "Do you want to exit now? [y/N]: " response
+          if [[ "$response" =~ ^([yY][eE][sS]|[yY])+$ ]]; then
+            exit 0
+          fi
         fi
       else
         error_exit "Failed to update repository at '$TARGET_DIR'."
@@ -231,3 +245,27 @@ for ENTRY in "${REPOS[@]}"; do
 
   echo "----------------------------------------"
 done
+
+# Do the following if ROS_NAMESPACE starts with gcs.*
+if [[ "$ROS_NAMESPACE" =~ ^gcs.*$ ]]; then
+  WARNING_FLAG=0
+  MAIN_DIRS="${MAIN_DIRS} ${PAC_WS} ${PAC_WS}/src ${PAC_WS}/bin ${PAC_WS}/build ${PAC_WS}/install ${PAC_WS}/log"
+  ALL_DIRS="${MAIN_DIRS} ${SRC_DIRS}"
+
+  LOCAL_DIRS=$(find "${PAC_WS}" -maxdepth 1 -type d)
+  LOCAL_DIRS="${LOCAL_DIRS} $(find "${PAC_WS}/src" -maxdepth 1 -type d)"
+  for DIR in $LOCAL_DIRS; do
+    if [[ ! " ${ALL_DIRS} " =~ " ${DIR} " ]]; then
+      warning_message "Directory '$DIR' is not part of the setup directories list."
+      WARNING_FLAG=1
+    fi
+  done
+  if [ $WARNING_FLAG -eq 1 ]; then
+      warning_message "Be cautious when deleting the workspace."
+  fi
+  cp -r "${PAC_WS}/pac_ws_setup/bin" "${PAC_WS}/bin"
+  info_message ""
+  info_message "Add source \${PAC_WS}/bin/setup.bash to your .bashrc file, if not already added."
+  info_message "Commands: 'pac' runs launch/run_gcs.bash, 'px4' runs px4_multi_sim/px4_main.sh"
+  info_message ""
+fi
