@@ -26,7 +26,7 @@ if [[ "$ROS_NAMESPACE" =~ ^r[0-9]+$ ]]; then
   source /opt/ros/$ROS_DISTRO/setup.bash
   source /opt/ros/extra/install/local_setup.bash
   export PYTHONPATH="/opt/venv/lib/python${PYTHON_VERSION}/site-packages:$PYTHONPATH"
-  bash /workspace/pac_ws_setup/starling_build.bash
+  # bash /workspace/pac_ws_setup/starling_build.bash
   source /workspace/install/local_setup.bash
    
   # While check if mission_control_enable is set to true or not defined
