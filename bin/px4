@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+${PAC_WS}/px4_multi_sim/px4_main.sh "$@"

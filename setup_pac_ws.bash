@@ -101,7 +101,7 @@ else
   if [[ "$ROS_NAMESPACE" =~ ^gcs.*$ ]]; then
     # Check if user wants to set DEV_MODE to 1
     if [ $DEV_MODE -eq 0 ]; then
-      read -p "ROS_NAMESPACE is set to 'gcs.*'. Do you want to enable development mode? [y/N]: " response
+      read -p "Do you want to enable development mode? [y/N]: " response
       if [[ "$response" =~ ^([yY][eE][sS]|[yY])+$ ]]; then
         DEV_MODE=1
       fi

@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+${PAC_WS}/launch/run_gcs.bash "$@"
