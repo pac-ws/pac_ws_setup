@@ -31,7 +31,7 @@ if [[ "$ROS_NAMESPACE" =~ ^r[0-9]+$ ]]; then
    
   # While check if mission_control_enable is set to true or not defined
   while [ -z "${mission_control_enable+x}" ] || [ "${mission_control_enable}" != "True" ]; do
-    mission_control_enable=$(ros2 param get --hide-type /mission_control hardware_enable 2>/dev/null)
+    mission_control_enable=$(ros2 topic echo /mission_control --once | grep -A 1 "data:" | tail -n 1 | awk '{print $2}')
     sleep 2
   done
   echo "Mission Control Enabled, Launching Starling Offboard"
