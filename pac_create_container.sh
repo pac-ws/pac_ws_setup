@@ -200,6 +200,8 @@ DOCKER_RUN_CMD=(
   --env "RCUTILS_COLORIZED_OUTPUT=1"
   --env "PAC_WS=${CONTAINER_CC_WS}"
   --env "ROS_DOMAIN_ID=10"
+  --env "ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST"
+  --env "RMW_IMPLEMENTATION=rmw_cyclonedds_cpp"
   --workdir "${CONTAINER_CC_WS}"
 )
 

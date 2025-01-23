@@ -28,6 +28,9 @@ if [[ "$ROS_NAMESPACE" =~ ^r[0-9]+$ ]]; then
   export PYTHONPATH="/opt/venv/lib/python${PYTHON_VERSION}/site-packages:$PYTHONPATH"
   # bash /workspace/pac_ws_setup/starling_build.bash
   source /workspace/install/local_setup.bash
+
+  # Starling bridge
+  ros2 run zenoh_vendor zenoh-bridge-ros2dds -c /workspace/src/zenoh_vendor/configs/zenoh_starling.json5
    
   # While check if mission_control_enable is set to true or not defined
   while [ -z "${mission_control_enable+x}" ] || [ "${mission_control_enable}" != "1" ]; do
@@ -36,6 +39,9 @@ if [[ "$ROS_NAMESPACE" =~ ^r[0-9]+$ ]]; then
   done
   echo "Mission Control Enabled, Launching Starling Offboard"
   ros2 launch /workspace/launch/starling_offboard.yaml
+else
+  # GCS bridge
+  ros2 run zenoh_vendor zenoh-bridge-ros2dds -c /workspace/src/zenoh_vendor/configs/zenoh_gcs.json5
 fi
 
 # Keep script alive
