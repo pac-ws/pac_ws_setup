@@ -223,8 +223,8 @@ if [[ "$USE_GPU" == true ]]; then
   DOCKER_RUN_CMD+=(--env "NVIDIA_DRIVER_CAPABILITIES=all")
 fi
 
-# Add entrypoint if ROS_NAMESPACE has the pattern r[0-9]+
-if [[ "$ROS_NAMESPACE" =~ ^r[0-9]+$ ]]; then
+# Add entrypoint for all except simulator containers (GCS requires zenoh bridge on startup)
+if [[ "$ROS_NAMESPACE" =~ ^r[0-9]+$  || "$ROS_NAMESPACE" = "gcs" ]]; then
   DOCKER_RUN_CMD+=(--entrypoint /workspace/pac_ws_setup/entrypoint.sh)
 fi
 
