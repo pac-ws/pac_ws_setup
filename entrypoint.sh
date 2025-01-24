@@ -49,7 +49,8 @@ if [[ "$ROS_NAMESPACE" =~ ^r[0-9]+$ ]]; then
     sleep 2
   done
   echo "Mission Control Enabled, Launching Starling Offboard"
-  ros2 launch /workspace/launch/starling_offboard.yaml
+  # ros2 launch /workspace/launch/starling_offboard.yaml
+  ros2 launch /workspace/launch/lpac_l1.yaml
 
 else
   ROSInit
@@ -61,5 +62,5 @@ fi
 
 # Keep script alive
 while true; do
-  sleep 1
+  sleep 10
 done
