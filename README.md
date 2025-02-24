@@ -18,11 +18,18 @@ git clone https://github.com/pac-ws/pac_ws_setup.git ${PAC_WS}/pac_ws_setup
 # Clone repositories (Use this to also update the repositories)
 cd ${PAC_WS}/pac_ws_setup
 bash setup_pac_ws.bash -d ${PAC_WS}
-# add --dev for cloning using ssh instead of https
+# Add --dev for cloning using ssh instead of https
+```
+
+Add the following to `~/.bashrc` file for easy execution of commands
+```bash
+source ${PAC_WS}/bin/setup.bash
 ```
 
 ```bash
-# Create container
+# Create container (auto)
+pac create
+# Alternatively, to explicitly provide arguments
 cd ${PAC_WS}/pac_ws_setup
 bash pac_create_container.sh -d ${PAC_WS} --ns ${ROS_NAMESPACE} -n gcs --jazzy
 # Use --humble for Ubuntu 22.04 with ROS2 humble
@@ -30,8 +37,10 @@ bash pac_create_container.sh -d ${PAC_WS} --ns ${ROS_NAMESPACE} -n gcs --jazzy
 ```
 
 ```bash
-# Build ros2 pac packages
-docker exec -it gcs bash -ci pac_ws_setup/gcs_build.bash
+# Build ros2 pac packages on gcs
+pac build
+# To update the packages at anytime on gcs
+pac update
 ```
 
 ## Setting up the robot
@@ -61,28 +70,30 @@ bash setup_pac_ws.bash -d ${PAC_WS}
 cd ${PAC_WS}/pac_ws_setup
 bash pac_create_container.sh -d ${PAC_WS} --ns ${ROS_NAMESPACE} -n pac-$HOSTNAME --jazzy
 # Use --humble for Ubuntu 22.04 with ROS2 humble
-# You can alternatively run ${PAC_WS}/launch/run_gcs.bash --create
+# Use --gpu for Nvidia GPU support
 ```
 
 ```bash
 # Build ros2 pac packages
 docker exec -it pac-$HOSTNAME bash -ci pac_ws_setup/build.bash
-# You can alternatively run ${PAC_WS}/launch/run_gcs.bash --build
 ```
 
 ## Parameters to understand on GCS
 
-Open `${PAC_WS}/launch/rviz.yaml` and note the following parameters.
+Open `${PAC_WS}/launch/lpac.yaml` and note the following parameters.
 ```yaml
   - arg:
       name: 'env_dir'
-      default: 'env3_f2_r2'
+      default: 'tests'
+  - arg:
+      name: 'idf_file'
+      default: '$(var full_path)/1.env'
   - arg:
       name: 'namespaces_of_robots'
       default: '["fake1", "fake2"]'
   - arg:
       name: 'env_scale_factor'
-      default: '50.0'
+      default: '4.0'
   - arg:
       name: 'vel_scale_factor'
       default: '0.2'
@@ -111,30 +122,9 @@ The model predicts max velocity to be $5 m/s$. The systems scales the predicted 
 ## Running ros2 launch files
 
 ### GCS
-The file `${PAC_WS}/launch/run_gcs.bash` supports the following.
-Do this separately in different terminals.
-```bash
-# Get the bash terminal inside the docker
-bash run_gcs.bash --bash
-# Run the gcs_origin launch file
-bash run_gcs.bash --origin
-# Run the status_pac node
-bash run_gcs.bash --pac
-# Run the rviz launch file
-bash run_gcs.bash --rviz
-# Run the lpac centralized coverage controller
-bash run_gcs.bash --lpac
-```
+Run `pac` without any arguments to see list of supported commands.
 
-### Robots
-Run `gps_fix` from `px4_homify` package and `offboard.launch` from `starling_offboard_cpp`:
-
-```bash
-docker exec -it pac-$HOSTNAME bash
-ros2 launch launch/starling_offboard.yaml`
-```
-
-#### For PX4 simulation
+### For PX4 simulation
 The following commands will create docker containers and automatically launch `starling_offboard.yaml`.
 ```bash
 cd ${PAC_WS}/launch/offboard_sim
