@@ -267,6 +267,5 @@ if [[ "$ROS_NAMESPACE" =~ ^gcs.*$ ]]; then
   cp -r "${PAC_WS}/pac_ws_setup/bin" "${PAC_WS}/bin"
   info_message ""
   info_message "Add source \${PAC_WS}/bin/setup.bash to your .bashrc file, if not already added."
-  info_message "Commands: 'pac' runs launch/run_gcs.bash, 'px4' runs px4_multi_sim/px4_main.sh"
   info_message ""
 fi
