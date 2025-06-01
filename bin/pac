@@ -23,6 +23,9 @@ Options:
   lpac                                Run LPAC
   bag <bag_file>                      Saves pose and cmd_vel to a bag file
 
+  px4_sim <cmd>                       Run a PX4 simulation command
+  px4_sim <-h|help>                   Display PX4 simulation help
+
   ------------------------------------------------------------------------
   <sys_name>: Use one of the following names 
             gcs.*       :   GCS container
@@ -181,7 +184,7 @@ case "$1" in
     if [ "$(command -v nvidia-smi)" ]; then
       GPU_FLAG="--gpu"
     fi
-    bash ${PAC_WS}/pac_ws_setup/pac_create_container.sh -d "${PAC_WS}" --ns ${GCS_CONTAINER_NAME} -n ${GCS_CONTAINER_NAME} --jazzy ${GPU_FLAG}
+    bash ${PAC_WS}/pac_ws_setup/pac_create_container.sh -d ${PAC_WS} --ns ${GCS_CONTAINER_NAME} -n ${GCS_CONTAINER_NAME} --jazzy ${GPU_FLAG}
     ;;
   mission)
     gcs_cmd "pip install pyqt5"
@@ -200,6 +203,9 @@ case "$1" in
   lpac)
     info_message "Running LPAC status script..."
     gcs_cmd "export DISPLAY='$DISPLAY'; ros2 launch launch/lpac.yaml"
+    ;;
+  px4_sim)
+    bash ${PAC_WS}/px4_multi_sim/px4_sim.sh "${@:2}"
     ;;
   bag)
     BAG_FILE=${2:-}

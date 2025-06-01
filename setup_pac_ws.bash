@@ -264,7 +264,7 @@ if [[ "$ROS_NAMESPACE" =~ ^gcs.*$ ]]; then
   if [ $WARNING_FLAG -eq 1 ]; then
       warning_message "Be cautious when deleting the workspace."
   fi
-  cp -r "${PAC_WS}/pac_ws_setup/bin" "${PAC_WS}/bin"
+  cp -r "${PAC_WS}/pac_ws_setup/bin" "${PAC_WS}/"
   info_message ""
   info_message "Add source \${PAC_WS}/bin/setup.bash to your .bashrc file, if not already added."
   info_message ""
