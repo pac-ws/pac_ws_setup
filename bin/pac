@@ -79,7 +79,7 @@ check_args() {
   fi
 }
 
-sys_pattern='^(gcs.*|px4_[0-9]+|r[0-9]+|\.r[0-9]+)$'
+sys_pattern='^(gcs.*|px4_sim|px4_[0-9]+|r[0-9]+|\.r[0-9]+)$'
 check_sys_name() {
   if [[ -z "${1:-}" ]]; then
     echo -n "gcs"
