@@ -13,7 +13,6 @@ NC='\033[0m' # No Color
 # Function to print usage information
 print_usage() {
   cat <<EOF
-Usage: bash $(basename "$0") [OPTIONS]
 
 Options:
   -d, --directory <workspace directory>  Specify the workspace directory
@@ -23,6 +22,8 @@ Options:
       --humble                           Use 'humble' image tag
       --gpu                              Enable GPU support
   -i, --id                               Specify ROBOT_ID (default: 1) 
+  --ros-domain-id <domain_id>            Set ROS_DOMAIN_ID (default: 10)
+  --rmw <rmw_implementation>             Specify RMW implementation (default: rmw_cyclonedds_cpp)
   -h, --help                             Display this help message
 
 Examples:
@@ -76,6 +77,7 @@ ROS_NAMESPACE=""
 ROBOT_ID=1
 USE_GPU=false
 RMW_IMPLEMENTATION="rmw_cyclonedds_cpp"
+ROS_DOMAIN_ID=10
 
 # Process parsed options
 while true; do
@@ -115,6 +117,13 @@ while true; do
       RMW_IMPLEMENTATION="$2"
       if [[ "$RMW_IMPLEMENTATION" != "rmw_cyclonedds_cpp" && "$RMW_IMPLEMENTATION" != "rmw_fastrtps_cpp" ]]; then
         error_exit "Invalid RMW implementation: $RMW_IMPLEMENTATION. Use 'rmw_cyclonedds_cpp' or 'rmw_fastrtps_cpp'."
+      fi
+      shift 2
+      ;;
+    --ros-domain-id)
+      ROS_DOMAIN_ID="$2"
+      if ! [[ "$ROS_DOMAIN_ID" =~ ^[0-9]+$ ]]; then
+        error_exit "Invalid ROS_DOMAIN_ID: $ROS_DOMAIN_ID. It must be a positive integer."
       fi
       shift 2
       ;;
@@ -207,7 +216,7 @@ DOCKER_RUN_CMD=(
   --pid=host
   --env "RCUTILS_COLORIZED_OUTPUT=1"
   --env "PAC_WS=${CONTAINER_CC_WS}"
-  --env "ROS_DOMAIN_ID=10"
+  --env "ROS_DOMAIN_ID=${ROS_DOMAIN_ID}"
   --env "ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST"
   --env "RMW_IMPLEMENTATION=${RMW_IMPLEMENTATION}"
   --workdir "${CONTAINER_CC_WS}"

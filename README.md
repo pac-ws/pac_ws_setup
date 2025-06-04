@@ -29,12 +29,11 @@ source ${PAC_WS}/bin/setup.bash
 ```bash
 # Create container (auto)
 pac create
-# Alternatively, to explicitly provide arguments
-cd ${PAC_WS}/pac_ws_setup
-bash pac_create_container.sh -d ${PAC_WS} --ns ${ROS_NAMESPACE} -n gcs --jazzy
-# Use --humble for Ubuntu 22.04 with ROS2 humble
-# Use --gpu for Nvidia GPU support
+# See `pac create -h` for more options
+# Uses rmw_cyclonedds_cpp by default
+# add --rmw rmw_fastrtps_cpp for fastrtps
 ```
+
 
 ```bash
 # Build ros2 pac packages on gcs
@@ -69,8 +68,7 @@ bash setup_pac_ws.bash -d ${PAC_WS}
 # Create container
 cd ${PAC_WS}/pac_ws_setup
 bash pac_create_container.sh -d ${PAC_WS} --ns ${ROS_NAMESPACE} -n pac-$HOSTNAME --jazzy
-# Use --humble for Ubuntu 22.04 with ROS2 humble
-# Use --gpu for Nvidia GPU support
+# See `pac_create_container.sh -h` for more options
 ```
 
 ```bash
