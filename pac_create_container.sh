@@ -56,7 +56,7 @@ done
 
 # Define short and long options
 SHORT_OPTS="d:n:i:h"
-LONG_OPTS="directory:,name:,ns:,gpu,jazzy,humble,id:,help"
+LONG_OPTS="directory:,name:,ns:,gpu,jazzy,humble,id:,rmw:,help"
 
 # Parse options using getopt
 PARSED_PARAMS=$(getopt --options "$SHORT_OPTS" --long "$LONG_OPTS" --name "$(basename "$0")" -- "$@") || {
@@ -75,6 +75,7 @@ CONTAINER_NAME=""
 ROS_NAMESPACE=""
 ROBOT_ID=1
 USE_GPU=false
+RMW_IMPLEMENTATION="rmw_cyclonedds_cpp"
 
 # Process parsed options
 while true; do
@@ -108,6 +109,13 @@ while true; do
       ;;
     --ns)
       ROS_NAMESPACE="$2"
+      shift 2
+      ;;
+    --rmw)
+      RMW_IMPLEMENTATION="$2"
+      if [[ "$RMW_IMPLEMENTATION" != "rmw_cyclonedds_cpp" && "$RMW_IMPLEMENTATION" != "rmw_fastrtps_cpp" ]]; then
+        error_exit "Invalid RMW implementation: $RMW_IMPLEMENTATION. Use 'rmw_cyclonedds_cpp' or 'rmw_fastrtps_cpp'."
+      fi
       shift 2
       ;;
     -h|--help)
@@ -201,7 +209,7 @@ DOCKER_RUN_CMD=(
   --env "PAC_WS=${CONTAINER_CC_WS}"
   --env "ROS_DOMAIN_ID=10"
   --env "ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST"
-  --env "RMW_IMPLEMENTATION=rmw_cyclonedds_cpp"
+  --env "RMW_IMPLEMENTATION=${RMW_IMPLEMENTATION}"
   --workdir "${CONTAINER_CC_WS}"
 )
 

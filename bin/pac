@@ -184,7 +184,7 @@ case "$1" in
     if [ "$(command -v nvidia-smi)" ]; then
       GPU_FLAG="--gpu"
     fi
-    bash ${PAC_WS}/pac_ws_setup/pac_create_container.sh -d ${PAC_WS} --ns ${GCS_CONTAINER_NAME} -n ${GCS_CONTAINER_NAME} --jazzy ${GPU_FLAG}
+    bash ${PAC_WS}/pac_ws_setup/pac_create_container.sh -d ${PAC_WS} --ns ${GCS_CONTAINER_NAME} -n ${GCS_CONTAINER_NAME} --jazzy ${GPU_FLAG} ${@:2}
     ;;
   mission)
     gcs_cmd "pip install pyqt5"
