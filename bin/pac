@@ -26,6 +26,8 @@ Options:
   px4_sim <cmd>                       Run a PX4 simulation command
   px4_sim <-h|help>                   Display PX4 simulation help
 
+  fake_robots <num_robots>            Run simple fake robots
+
   ------------------------------------------------------------------------
   <sys_name>: Use one of the following names 
             gcs.*       :   GCS container
@@ -206,6 +208,9 @@ case "$1" in
     ;;
   px4_sim)
     bash ${PAC_WS}/px4_multi_sim/px4_sim.sh "${@:2}"
+    ;;
+  fake_robots)
+    gcs_cmd "ros2 launch gcs fake_robots_launch.py num_robots:="${2:-}
     ;;
   bag)
     BAG_FILE=${2:-}

@@ -41,7 +41,7 @@ _pac_completions()
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
 
-    cmds="help create build mission rviz lpac px4_sim bag list logs delete restart restart-px4 bash cmd \
+    cmds="help create build mission rviz lpac px4_sim fake_robots bag list logs delete restart restart-px4 bash cmd \
 gps batt journal update pose vel vlp vgps origin pac rqt"
 
     if [[ ${COMP_CWORD} -eq 1 ]]; then
