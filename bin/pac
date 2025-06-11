@@ -21,6 +21,7 @@ Options:
   mission                             Launch GCS mission_control
   rviz                                Launch RViz without LPAC
   lpac                                Run LPAC
+  offboard <num_robots> <ns_prefix>   Run offboard simulator
   bag <bag_file>                      Saves pose and cmd_vel to a bag file
 
   px4_sim <cmd>                       Run a PX4 simulation command
@@ -204,13 +205,16 @@ case "$1" in
     ;;
   lpac)
     info_message "Running LPAC status script..."
-    gcs_cmd "export DISPLAY='$DISPLAY'; ros2 launch launch/lpac.yaml"
+    gcs_cmd "ros2 launch async_pac_gnn_py lpac_launch.py"
     ;;
   px4_sim)
     bash ${PAC_WS}/px4_multi_sim/px4_sim.sh "${@:2}"
     ;;
   fake_robots)
     gcs_cmd "ros2 launch gcs fake_robots_launch.py num_robots:="${2:-}
+    ;;
+  offboard)
+    gcs_cmd "ros launch launch/multi_offboard.yaml num_robots:=${2:-} ns_prefix:=${3:-}"
     ;;
   bag)
     BAG_FILE=${2:-}
