@@ -99,7 +99,7 @@ while true; do
       shift 2
       ;;
     --jazzy)
-      IMAGE_TAG="jazzy"
+      IMAGE_TAG="jazzy-20250610Z"
       shift
       ;;
     --humble)
