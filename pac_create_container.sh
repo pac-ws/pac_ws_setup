@@ -78,6 +78,7 @@ ROBOT_ID=1
 USE_GPU=false
 RMW_IMPLEMENTATION="rmw_cyclonedds_cpp"
 ROS_DOMAIN_ID=10
+PYTORCH_BASE_DATESTAMP="20250613Z"
 
 # Process parsed options
 while true; do
@@ -99,7 +100,7 @@ while true; do
       shift 2
       ;;
     --jazzy)
-      IMAGE_TAG="jazzy-20250610Z"
+      IMAGE_TAG="jazzy"
       shift
       ;;
     --humble)
@@ -155,7 +156,11 @@ if [[ "$ARCH" == "aarch64" ]]; then
   IMAGE_TAG="arm64-${IMAGE_TAG}"
 fi
 
-IMAGE_NAME="${IMAGE_BASE_NAME}:${IMAGE_TAG}"
+if [[ "$USE_GPU" == true && "$ARCH" == "x86_64"  ]]; then
+  IMAGE_TAG="${IMAGE_TAG}-cuda"
+fi
+
+IMAGE_NAME="${IMAGE_BASE_NAME}:${IMAGE_TAG}-${PYTORCH_BASE_DATESTAMP}"
 
 # Pull the Docker image
 echo "Pulling Docker image: ${IMAGE_NAME}"
