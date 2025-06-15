@@ -94,6 +94,13 @@ while getopts ":d:-:" opt; do
   esac
 done
 
+# Check if PAC_WS is set
+if [ -z "${PAC_WS}" ]; then
+  error_exit "PAC_WS not set: Either set PAC_WS as environment variable or use -d <directory> argument"
+fi
+
+info_message "PAC_WS: $PAC_WS"
+
 # Check if $ROS_NAMESPACE is set
 if [ -z "${ROS_NAMESPACE}" ]; then
   info_message "ROS_NAMESPACE is not set. Can't check if it is gcs."
@@ -101,7 +108,7 @@ else
   if [[ "$ROS_NAMESPACE" =~ ^gcs.*$ ]]; then
     # Check if user wants to set DEV_MODE to 1
     if [ $DEV_MODE -eq 0 ]; then
-      read -p "Do you want to enable development mode? [y/N]: " response
+      read -t 30 -p "Do you want to enable development mode? [y/N]: " response || response="n"
       if [[ "$response" =~ ^([yY][eE][sS]|[yY])+$ ]]; then
         DEV_MODE=1
       fi
@@ -109,17 +116,11 @@ else
   fi
 fi
 
-info_message "PAC_WS: $PAC_WS"
-
 # Debugging or additional actions based on the --dev flag
 if [ $DEV_MODE -eq 1 ]; then
   echo "Development mode enabled."
 fi
 
-# Check if PAC_WS is set
-if [ -z "${PAC_WS}" ]; then
-  error_exit "PAC_WS not set: Either set PAC_WS  as environment variable or use -d <directory> argument"
-fi
 
 # Ensure PAC_WS is an absolute path
 PAC_WS=$(realpath "${PAC_WS}")
@@ -180,7 +181,13 @@ for ENTRY in "${REPOS[@]}"; do
   [[ -z "$ENTRY" || "$ENTRY" == \#* ]] && continue
 
   # Read the REPO_URL and RELATIVE_TARGET_DIR from the entry
-  read -r REPO_URL RELATIVE_TARGET_DIR <<< "$ENTRY"
+  # Handle entries that might contain spaces by using array assignment
+  ENTRY_ARRAY=($ENTRY)
+  if [ ${#ENTRY_ARRAY[@]} -ne 2 ]; then
+    error_exit "Invalid repository entry format: '$ENTRY'. Expected: 'REPO_URL TARGET_DIR'"
+  fi
+  REPO_URL="${ENTRY_ARRAY[0]}"
+  RELATIVE_TARGET_DIR="${ENTRY_ARRAY[1]}"
 
   # Combine PAC_WS and RELATIVE_TARGET_DIR to get the absolute target directory
   TARGET_DIR="${PAC_WS}/${RELATIVE_TARGET_DIR}"
@@ -196,17 +203,19 @@ for ENTRY in "${REPOS[@]}"; do
 
   if [[ -d "$TARGET_DIR/.git" ]]; then
     info_message "Repository already exists. Checking for updates..."
-    cd "$TARGET_DIR" || error_exit "Failed to navigate to '$TARGET_DIR'."
+    pushd "$TARGET_DIR" >/dev/null || error_exit "Failed to navigate to '$TARGET_DIR'."
 
     # Check for local changes
     if [[ -n $(git status --porcelain) ]]; then
       warning_message "There are local changes in '$TARGET_DIR'."
     fi
 
-    git fetch
+    if ! git fetch; then
+      error_exit "Failed to fetch updates for repository at '$TARGET_DIR'."
+    fi
 
-    LOCAL=$(git rev-parse @)
-    REMOTE=$(git rev-parse @{u} || echo "no_upstream")
+    LOCAL=$(git rev-parse @ 2>/dev/null) || error_exit "Failed to get local commit hash for '$TARGET_DIR'."
+    REMOTE=$(git rev-parse @{u} 2>/dev/null || echo "no_upstream")
     BASE=$(git merge-base @ @{u} 2>/dev/null || echo "no_merge_base")
 
     if [ "$LOCAL" = "$REMOTE" ]; then
@@ -218,7 +227,7 @@ for ENTRY in "${REPOS[@]}"; do
         # If the directory was pac_ws_setup, print warning to re-run setup_pac_ws.bash
         if [[ "$RELATIVE_TARGET_DIR" == "pac_ws_setup" ]]; then
           echo -e "${RED}Please re-run the setup_pac_ws.bash script to ensure the changes are applied.${NC}"
-          read -p "Do you want to exit now? [y/N]: " response
+          read -t 30 -p "Do you want to exit now? [y/N]: " response || response="n"
           if [[ "$response" =~ ^([yY][eE][sS]|[yY])+$ ]]; then
             exit 0
           fi
@@ -231,6 +240,8 @@ for ENTRY in "${REPOS[@]}"; do
     else
       warning_message "Git branches have diverged in '$TARGET_DIR'. Manual intervention is required."
     fi
+    
+    popd >/dev/null
   else
     info_message "Cloning repository..."
     # Create the target directory's parent directories if they don't exist
@@ -253,8 +264,7 @@ if [[ "$ROS_NAMESPACE" =~ ^gcs.*$ ]]; then
   MAIN_DIRS="${MAIN_DIRS} ${PAC_WS} ${PAC_WS}/src ${PAC_WS}/bin ${PAC_WS}/build ${PAC_WS}/install ${PAC_WS}/log"
   ALL_DIRS="${MAIN_DIRS} ${SRC_DIRS}"
 
-  LOCAL_DIRS=$(find "${PAC_WS}" -maxdepth 1 -type d)
-  LOCAL_DIRS="${LOCAL_DIRS} $(find "${PAC_WS}/src" -maxdepth 1 -type d)"
+  LOCAL_DIRS=$(find "${PAC_WS}" "${PAC_WS}/src" -maxdepth 1 -type d 2>/dev/null)
   for DIR in $LOCAL_DIRS; do
     if [[ ! " ${ALL_DIRS} " =~ " ${DIR} " ]]; then
       warning_message "Directory '$DIR' is not part of the setup directories list."
@@ -264,7 +274,23 @@ if [[ "$ROS_NAMESPACE" =~ ^gcs.*$ ]]; then
   if [ $WARNING_FLAG -eq 1 ]; then
       warning_message "Be cautious when deleting the workspace."
   fi
-  cp -r "${PAC_WS}/pac_ws_setup/bin" "${PAC_WS}/"
+  if [ -d "${PAC_WS}/pac_ws_setup/bin" ]; then
+    # Create temporary directory for atomic update to avoid self-modification issues
+    TEMP_BIN_DIR=$(mktemp -d)
+    cp -r "${PAC_WS}/pac_ws_setup/bin"/* "${TEMP_BIN_DIR}/"
+    
+    # Backup current bin if it exists
+    if [ -d "${PAC_WS}/bin" ]; then
+      mv "${PAC_WS}/bin" "${PAC_WS}/bin.backup.$(date +%s)"
+    fi
+    
+    # Atomically move new bin into place
+    mv "${TEMP_BIN_DIR}" "${PAC_WS}/bin"
+    
+    info_message "Scripts updated. Please restart any running pac commands."
+  else
+    error_exit "Source directory '${PAC_WS}/pac_ws_setup/bin' does not exist. Cannot copy setup scripts."
+  fi
   info_message ""
   info_message "Add source \${PAC_WS}/bin/setup.bash to your .bashrc file, if not already added."
   info_message ""

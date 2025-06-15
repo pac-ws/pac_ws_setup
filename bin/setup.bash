@@ -41,8 +41,9 @@ _pac_completions()
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
 
-    cmds="help create build mission rviz lpac offboard px4_sim fake_robots bag list logs delete restart restart-px4 bash cmd \
-gps batt journal update pose vel vlp vgps origin pac rqt"
+    cmds="help create build mission rviz lpac lpac_l1 offboard px4_sim fake_robots bag \
+          list logs delete restart restart-px4 bash cmd gps batt journal update \
+          pose vel vlp vgps origin pac rqt"
 
     if [[ ${COMP_CWORD} -eq 1 ]]; then
         COMPREPLY=( $(compgen -W "${cmds}" -- "${cur}") )
@@ -58,7 +59,7 @@ gps batt journal update pose vel vlp vgps origin pac rqt"
 
         old_cword=$COMP_CWORD
         COMP_WORDS=( "${new_words[@]}" )
-        # Since we removed exactly one token ("pac"), shift COMP_CWORD by –1:
+        # Since we removed exactly one token ("pac"), shift COMP_CWORD by -1:
         COMP_CWORD=$(( old_cword - 1 ))
 
         # Now delegate to px4 completion:
@@ -67,14 +68,18 @@ gps batt journal update pose vel vlp vgps origin pac rqt"
     fi
     case "${COMP_WORDS[1]}" in
         bag|list|logs|delete|restart|restart-px4|bash|gps|batt|journal|update|pose|vel|vlp|vgps)
-            sys_names=$(docker ps --format '{{.Names}}' 2>/dev/null)
-            COMPREPLY=( $(compgen -W "${sys_names}" -- "${cur}") )
+            if command -v docker >/dev/null 2>&1; then
+                sys_names=$(docker ps --format '{{.Names}}' 2>/dev/null)
+                COMPREPLY=( $(compgen -W "${sys_names}" -- "${cur}") )
+            fi
             return 0
             ;;
         cmd)
             if [[ ${COMP_CWORD} -eq 2 ]]; then
-                sys_names=$(docker ps --format '{{.Names}}' 2>/dev/null)
-                COMPREPLY=( $(compgen -W "${sys_names}" -- "${cur}") )
+                if command -v docker >/dev/null 2>&1; then
+                    sys_names=$(docker ps --format '{{.Names}}' 2>/dev/null)
+                    COMPREPLY=( $(compgen -W "${sys_names}" -- "${cur}") )
+                fi
                 return 0
             else
                 COMPREPLY=( $(compgen -c -- "${cur}") )
@@ -102,4 +107,9 @@ export_with_directory() {
   fi
 }
 
-export_with_directory PATH ${PAC_WS}/bin
+# Validate PAC_WS before using it
+if [[ -n "${PAC_WS:-}" && -d "${PAC_WS}" ]]; then
+    export_with_directory PATH "${PAC_WS}/bin"
+else
+    echo "Warning: PAC_WS is not set or does not point to a valid directory" >&2
+fi
