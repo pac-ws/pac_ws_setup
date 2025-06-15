@@ -1,14 +1,7 @@
 #!/bin/bash
 
-# Exit immediately if a command exits with a non-zero status,
-# Treat unset variables as an error, and ensure pipelines fail correctly.
-set -euo pipefail
-
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[0;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+# Source common utilities
+source "$(dirname "${BASH_SOURCE[0]}")/common.bash"
 
 # Function to print usage information
 print_usage() {
@@ -32,21 +25,8 @@ Examples:
 EOF
 }
 
-# Function to check if a command exists
-command_exists() {
-  command -v "$1" >/dev/null 2>&1
-}
-
-# Function to handle errors
-error_exit() {
-  echo -e "${RED}Error: $1${NC}" >&2
-  exit 1
-}
-#
-# Function to display informational messages
-info_message() {
-  echo -e "${BLUE}$1${NC}"
-}
+# Validate required commands
+require_commands docker
 
 # Ensure required commands are available
 for cmd in docker getopt; do
@@ -164,9 +144,7 @@ IMAGE_NAME="${IMAGE_BASE_NAME}:${IMAGE_TAG}-${PYTORCH_BASE_DATESTAMP}"
 
 # Pull the Docker image
 echo "Pulling Docker image: ${IMAGE_NAME}"
-if ! docker pull "${IMAGE_NAME}"; then
-  error_exit "Failed to pull Docker image: ${IMAGE_NAME}"
-fi
+docker pull "${IMAGE_NAME}" || error_exit "Failed to pull Docker image: ${IMAGE_NAME}"
 
 # Determine the workspace directory
 if [[ -z "$WS_DIR" ]]; then
@@ -187,8 +165,6 @@ fi
 
 CONTAINER_CC_WS="/workspace"
 
-# Set volume option with proper quoting
-VOLUME_OPTION="-v \"${WS_DIR}:${CONTAINER_CC_WS}:rw\""
 
 # Set container name if not provided
 if [[ -z "$CONTAINER_NAME" ]]; then
@@ -198,7 +174,7 @@ fi
 # Check if a container with the same name already exists
 if docker ps -a --format '{{.Names}}' | grep -Eq "^${CONTAINER_NAME}\$"; then
   echo "A container named '${CONTAINER_NAME}' already exists."
-  read -rp "Do you want to remove the existing container and create a new one? [y/N]: " response
+  response=$(read_with_timeout "Do you want to remove the existing container and create a new one? [y/N]: " 30 "N")
   case "$response" in
     [Yy]* )
       docker stop "${CONTAINER_NAME}" && docker rm "${CONTAINER_NAME}" || error_exit "Failed to remove existing container."
@@ -215,10 +191,10 @@ DOCKER_RUN_CMD=(
   docker run -it -d --init
   --name "${CONTAINER_NAME}"
   --net=host
-  --privileged
+  --cap-add=NET_ADMIN
+  --device=/dev/dri:/dev/dri
   --ipc=host
   --restart=always
-  --pid=host
   --env "RCUTILS_COLORIZED_OUTPUT=1"
   --env "PAC_WS=${CONTAINER_CC_WS}"
   --env "ROS_DOMAIN_ID=${ROS_DOMAIN_ID}"

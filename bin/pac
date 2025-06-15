@@ -129,7 +129,7 @@ ROBOT_CONTAINER_NAME="pac-m0054"
 
 get_ns_gcs() {
   if [[ "$1" =~ ^gcs.*$ ]]; then
-    read -p "Enter namespace: " namespace
+    read -t 30 -p "Enter namespace: " namespace || namespace="gcs"
     echo -n "$namespace"
   else
     echo -n "$1"
@@ -199,10 +199,10 @@ case "$1" in
     ;;
   -c|create)
     info_message "Creating PAC container..."
-    if [ "$(command -v nvidia-smi)" ]; then
+    if command -v nvidia-smi >/dev/null 2>&1; then
       GPU_FLAG="--gpu"
     fi
-    bash ${PAC_WS}/pac_ws_setup/pac_create_container.sh -d ${PAC_WS} --ns ${GCS_CONTAINER_NAME} -n ${GCS_CONTAINER_NAME} --jazzy ${GPU_FLAG} ${@:2}
+    bash "${PAC_WS}/pac_ws_setup/pac_create_container.sh" -d "${PAC_WS}" --ns "${GCS_CONTAINER_NAME}" -n "${GCS_CONTAINER_NAME}" --jazzy ${GPU_FLAG} "${@:2}"
     ;;
   mission)
     gcs_cmd "pip install pyqt5"
@@ -241,8 +241,13 @@ case "$1" in
     gcs_cmd "ros2 launch launch/multi_offboard.yaml num_robots:=${2} ns_prefix:=${3}"
     ;;
   bag)
-    BAG_FILE=${2:-}
-    gcs_cmd "ros2 bag record -o "/workspace/bags/${BAG_FILE}" -e '.*\/(pose|cmd_vel|sim)'"
+    check_args_with_message "bag file name" "${2:-}"
+    BAG_FILE="${2}"
+    # Validate bag file name for security
+    if [[ "$BAG_FILE" =~ [^a-zA-Z0-9._-] ]] || [[ "$BAG_FILE" == *".."* ]]; then
+      error_exit "Invalid bag file name: $BAG_FILE"
+    fi
+    gcs_cmd "ros2 bag record -o \"/workspace/bags/${BAG_FILE}\" -e '.*\/(pose|cmd_vel|sim)'"
     ;;
   list)
     SYS=$(check_sys_name "${2:-}")
@@ -291,7 +296,7 @@ case "$1" in
         ;;
       r*|.r*)
         robot_docker_cmd "${SYS}" '/workspace/pac_ws_setup/setup_pac_ws.bash -d /workspace/'
-        read -p "Do you want to restart the container? (y/n): " response
+        read -t 30 -p "Do you want to restart the container? (y/n): " response || response="n"
         if [[ "$response" =~ ^([yY][eE][sS]|[yY])+$ ]]; then
           robot_cmd "${SYS}" "docker restart ${ROBOT_CONTAINER_NAME}"
         fi

@@ -181,8 +181,8 @@ for ENTRY in "${REPOS[@]}"; do
   [[ -z "$ENTRY" || "$ENTRY" == \#* ]] && continue
 
   # Read the REPO_URL and RELATIVE_TARGET_DIR from the entry
-  # Handle entries that might contain spaces by using array assignment
-  ENTRY_ARRAY=($ENTRY)
+  # Handle entries that might contain spaces by using proper array assignment
+  read -ra ENTRY_ARRAY <<< "$ENTRY"
   if [ ${#ENTRY_ARRAY[@]} -ne 2 ]; then
     error_exit "Invalid repository entry format: '$ENTRY'. Expected: 'REPO_URL TARGET_DIR'"
   fi
@@ -205,8 +205,13 @@ for ENTRY in "${REPOS[@]}"; do
     info_message "Repository already exists. Checking for updates..."
     pushd "$TARGET_DIR" >/dev/null || error_exit "Failed to navigate to '$TARGET_DIR'."
 
+    # Verify we're in a git repository
+    if ! git rev-parse --git-dir >/dev/null 2>&1; then
+      error_exit "Directory '$TARGET_DIR' is not a valid git repository."
+    fi
+
     # Check for local changes
-    if [[ -n $(git status --porcelain) ]]; then
+    if [[ -n $(git status --porcelain 2>/dev/null) ]]; then
       warning_message "There are local changes in '$TARGET_DIR'."
     fi
 
@@ -275,19 +280,20 @@ if [[ "$ROS_NAMESPACE" =~ ^gcs.*$ ]]; then
       warning_message "Be cautious when deleting the workspace."
   fi
   if [ -d "${PAC_WS}/pac_ws_setup/bin" ]; then
-    # Create temporary directory for atomic update to avoid self-modification issues
-    TEMP_BIN_DIR=$(mktemp -d)
-    cp -r "${PAC_WS}/pac_ws_setup/bin"/* "${TEMP_BIN_DIR}/"
-    
-    # Backup current bin if it exists
-    if [ -d "${PAC_WS}/bin" ]; then
-      mv "${PAC_WS}/bin" "${PAC_WS}/bin.backup.$(date +%s)"
+    if [ -d "${PAC_WS}/bin" ] && diff -rq "${PAC_WS}/pac_ws_setup/bin" "${PAC_WS}/bin" >/dev/null 2>&1; then
+      :
+    else
+      TEMP_BIN_DIR=$(mktemp -d)
+      cp -r "${PAC_WS}/pac_ws_setup/bin"/* "${TEMP_BIN_DIR}/"
+      
+      if [ -d "${PAC_WS}/bin" ]; then
+        rm -rf "${PAC_WS}/bin"
+      fi
+      
+      mv "${TEMP_BIN_DIR}" "${PAC_WS}/bin"
+      
+      info_message "Scripts updated successfully. Please restart any running pac commands."
     fi
-    
-    # Atomically move new bin into place
-    mv "${TEMP_BIN_DIR}" "${PAC_WS}/bin"
-    
-    info_message "Scripts updated. Please restart any running pac commands."
   else
     error_exit "Source directory '${PAC_WS}/pac_ws_setup/bin' does not exist. Cannot copy setup scripts."
   fi
