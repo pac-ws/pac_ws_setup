@@ -79,7 +79,20 @@ info_message() {
 
 check_args() {
   if [[ -z "${1:-}" ]]; then
-    error_exit "Missing argument."
+    error_exit "Missing required argument."
+  fi
+}
+
+check_args_with_message() {
+  if [[ -z "${2:-}" ]]; then
+    error_exit "Missing required argument: ${1}"
+  fi
+}
+
+validate_ssh_name() {
+  local ssh_name="${1}"
+  if [[ ! "${ssh_name}" =~ ^[a-zA-Z0-9._-]+$ ]]; then
+    error_exit "Invalid SSH name format. Only alphanumeric characters, dots, underscores, and hyphens are allowed."
   fi
 }
 
@@ -144,6 +157,7 @@ robot_cmd() {
   SSH_NAME="${1}"
   # Remove leading dot
   SSH_NAME="${SSH_NAME#.}"
+  validate_ssh_name "${SSH_NAME}"
   shift
   info_message "Running command '$*' on '$SSH_NAME'..."
   ssh -t "${SSH_NAME}" "$*"
@@ -153,9 +167,9 @@ robot_docker_cmd() {
   if [[ -z "${1:-}" || -z "${2:-}" ]]; then
     error_exit "Missing robot SSH name or command. Usage: robot_docker_cmd <robot_ssh_name> <command>"
   fi
-  echo "Args: $@"
   SSH_NAME="${1}"
   SSH_NAME="${SSH_NAME#.}"
+  validate_ssh_name "${SSH_NAME}"
   shift
   info_message "Running command '$*' in container '${ROBOT_CONTAINER_NAME}' on '${SSH_NAME}'..."
   ssh -t "${SSH_NAME}" "docker exec -it ${ROBOT_CONTAINER_NAME} bash -ci '$*'"
@@ -192,16 +206,16 @@ case "$1" in
     ;;
   mission)
     gcs_cmd "pip install pyqt5"
-    xhost +
+    xhost +local:docker
     gcs_cmd "rm -f /root/.config/ros.org/rqt_gui.ini"
     gcs_cmd "export DISPLAY='$DISPLAY'; ros2 launch /workspace/launch/mission_control.py"
     ;;
   rviz)
-    xhost +
+    xhost +local:docker
     gcs_cmd "export DISPLAY='$DISPLAY'; ros2 launch launch/rviz.yaml"
     ;;
   rviz-only)
-    xhost +
+    xhost +local:docker
     gcs_cmd "export DISPLAY='$DISPLAY'; ros2 launch launch/rviz_only.yaml"
     ;;
   lpac)
@@ -209,17 +223,22 @@ case "$1" in
     gcs_cmd "ros2 launch async_pac_gnn_py lpac_launch.py"
     ;;
   lpac_l1)
+    check_args_with_message "number of robots" "${2:-}"
+    check_args_with_message "namespace prefix" "${3:-}"
     info_message "Running LPAC L1..."
-    gcs_cmd "ros2 launch async_pac_gnn_py lpac_l1_multi_launch.py num_robots:=${2:-} ns_prefix:=${3:-}"
+    gcs_cmd "ros2 launch async_pac_gnn_py lpac_l1_multi_launch.py num_robots:=${2} ns_prefix:=${3}"
     ;;
   px4_sim)
     bash ${PAC_WS}/px4_multi_sim/px4_sim.sh "${@:2}"
     ;;
   fake_robots)
-    gcs_cmd "ros2 launch gcs fake_robots_launch.py num_robots:="${2:-}
+    check_args_with_message "number of robots" "${2:-}"
+    gcs_cmd "ros2 launch gcs fake_robots_launch.py num_robots:=${2}"
     ;;
   offboard)
-    gcs_cmd "ros2 launch launch/multi_offboard.yaml num_robots:=${2:-} ns_prefix:=${3:-}"
+    check_args_with_message "number of robots" "${2:-}"
+    check_args_with_message "namespace prefix" "${3:-}"
+    gcs_cmd "ros2 launch launch/multi_offboard.yaml num_robots:=${2} ns_prefix:=${3}"
     ;;
   bag)
     BAG_FILE=${2:-}
@@ -315,7 +334,7 @@ case "$1" in
         robot_cmd "${SYS}" "voxl-inspect-gps"
         ;;
       *)
-        process_cmd "${SYS}" "ros2 run volx_inspect_gps volx_inspect_gps"
+        process_cmd "${SYS}" "ros2 run voxl_inspect_gps voxl_inspect_gps"
         ;;
     esac
     ;;
@@ -387,7 +406,7 @@ case "$1" in
     ;;
   rqt)
     info_message "Launching rqt..."
-    xhost +
+    xhost +local:docker
     gcs_cmd "export DISPLAY='$DISPLAY'; rqt"
     ;;
   *)
