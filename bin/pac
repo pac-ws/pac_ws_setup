@@ -20,6 +20,7 @@ Options:
 
   mission                             Launch GCS mission_control
   rviz                                Launch RViz without LPAC
+  update_world                        Launch update_world_node
   lpac                                Run LPAC
   lpac_l1                             Run LPAC L1
   offboard <num_robots> <ns_prefix>   Run offboard simulator
@@ -217,6 +218,10 @@ case "$1" in
   rviz-only)
     xhost +local:docker
     gcs_cmd "export DISPLAY='$DISPLAY'; ros2 launch launch/rviz_only.yaml"
+    ;;
+  update_world)
+    info_message "Launching update_world_node..."
+    gcs_cmd "ros2 launch launch/update_world.yaml"
     ;;
   lpac)
     info_message "Running LPAC..."
