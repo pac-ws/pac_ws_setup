@@ -252,7 +252,7 @@ case "$1" in
     if [[ "$BAG_FILE" =~ [^a-zA-Z0-9._-] ]] || [[ "$BAG_FILE" == *".."* ]]; then
       error_exit "Invalid bag file name: $BAG_FILE"
     fi
-    gcs_cmd "ros2 bag record -o \"/workspace/bags/${BAG_FILE}\" -e '.*\/(pose|cmd_vel|sim)'"
+    gcs_cmd "ros2 bag record -o \"/workspace/bags/${BAG_FILE}\" -e '.*\/(pose|cmd_vel|sim|mission_control|mission_origin_gps|pac_gcs)'"
     ;;
   list)
     SYS=$(check_sys_name "${2:-}")
