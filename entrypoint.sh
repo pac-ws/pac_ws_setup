@@ -14,6 +14,7 @@ echo "ROS_NAMESPACE: $ROS_NAMESPACE"
 echo "ROS_DOMAIN_ID: $ROS_DOMAIN_ID"
 echo "ROS_DISTRO: $ROS_DISTRO"
 echo "PYTHON_VERSION: $PYTHON_VERSION"
+echo "USE_ZENOH: ${USE_ZENOH:-1}"
 
 # Avoid cluttering the output with bridge messages but save the logs
 ZENOH_LOG_DIR=/workspace/log/zenoh
@@ -40,8 +41,12 @@ if [[ "$ROS_NAMESPACE" =~ ^r[0-9]+$ ]]; then
   ROSInit
 
   # Starling bridge
-  echo "Starting Starling bridge"
-  ros2 run zenoh_vendor zenoh-bridge-ros2dds -c /workspace/src/zenoh_vendor/configs/zenoh_starling.json5 > "$ZENOH_LOG_DIR"/zenoh_bridge.log 2>&1 &
+  if [[ "${USE_ZENOH:-1}" == "1" ]]; then
+    echo "Starting Starling bridge"
+    ros2 run zenoh_vendor zenoh-bridge-ros2dds -c /workspace/src/zenoh_vendor/configs/zenoh_starling.json5 > "$ZENOH_LOG_DIR"/zenoh_bridge.log 2>&1 &
+  else
+    echo "Zenoh bridge disabled (USE_ZENOH=0)"
+  fi
 
   # While check if mission_control_enable is set to true or not defined
   while [ -z "${mission_control_enable+x}" ] || [ "${mission_control_enable}" != "1" ]; do
@@ -56,8 +61,12 @@ else
   ROSInit
   #
   # GCS bridge
-  echo "Starting GCS bridge"
-  ros2 run zenoh_vendor zenoh-bridge-ros2dds -c /workspace/src/zenoh_vendor/configs/zenoh_gcs.json5 > "$ZENOH_LOG_DIR"/zenoh_bridge.log 2>&1 &
+  if [[ "${USE_ZENOH:-1}" == "1" ]]; then
+    echo "Starting GCS bridge"
+    ros2 run zenoh_vendor zenoh-bridge-ros2dds -c /workspace/src/zenoh_vendor/configs/zenoh_gcs.json5 > "$ZENOH_LOG_DIR"/zenoh_bridge.log 2>&1 &
+  else
+    echo "Zenoh bridge disabled (USE_ZENOH=0)"
+  fi
 fi
 
 # Keep script alive

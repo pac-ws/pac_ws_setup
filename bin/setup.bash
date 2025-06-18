@@ -33,6 +33,37 @@ _px4_completions()
     return 0
 }
 
+_pac_create_completions()
+{
+    local cur prev create_opts
+    COMPREPLY=()
+    
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    
+    create_opts="-d --directory -n --name --ns --jazzy --humble --gpu -i --id --ros-domain-id --rmw --no-zenoh -h --help"
+    
+    # Handle --rmw flag completion
+    if [[ "$prev" == "--rmw" ]]; then
+        rmw_opts="rmw_cyclonedds_cpp rmw_fastrtps_cpp"
+        COMPREPLY=( $(compgen -W "${rmw_opts}" -- "${cur}") )
+        return 0
+    fi
+    
+    # Handle other flags that take arguments
+    case "$prev" in
+        -d|--directory|-n|--name|--ns|-i|--id|--ros-domain-id)
+            # These options require user input, no completions available
+            return 0
+            ;;
+        *)
+            # Provide flag completions
+            COMPREPLY=( $(compgen -W "${create_opts}" -- "${cur}") )
+            return 0
+            ;;
+    esac
+}
+
 _pac_completions()
 {
     local cur prev cmds sys_names
@@ -41,7 +72,7 @@ _pac_completions()
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
 
-    cmds="help create build mission rviz lpac lpac_l1 offboard px4_sim update_world fake_robots bag \
+    cmds="help create build mission rviz lpac lpac_l1 lpac_l2 offboard px4_sim update_world fake_robots bag \
           list logs delete restart restart-px4 bash cmd gps batt journal update \
           pose vel vlp vgps origin pac rqt"
 
@@ -67,6 +98,11 @@ _pac_completions()
         return 0
     fi
     case "${COMP_WORDS[1]}" in
+        create)
+            # Delegate to pac create completion function
+            _pac_create_completions
+            return 0
+            ;;
         bag|list|logs|delete|restart|restart-px4|bash|gps|batt|journal|update|pose|vel|vlp|vgps)
             if command -v docker >/dev/null 2>&1; then
                 sys_names=$(docker ps --format '{{.Names}}' 2>/dev/null)
@@ -94,7 +130,6 @@ _pac_completions()
 }
 
 complete -F _pac_completions pac
-complete -F _px4_completions px4
 
 export_with_directory() {
   local var_name=$1

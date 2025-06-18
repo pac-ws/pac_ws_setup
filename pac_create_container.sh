@@ -17,6 +17,7 @@ Options:
   -i, --id                               Specify ROBOT_ID (default: 1) 
   --ros-domain-id <domain_id>            Set ROS_DOMAIN_ID (default: 10)
   --rmw <rmw_implementation>             Specify RMW implementation (default: rmw_cyclonedds_cpp)
+  --no-zenoh                             Set auto-start zenoh bridge to false
   -h, --help                             Display this help message
 
 Examples:
@@ -37,7 +38,7 @@ done
 
 # Define short and long options
 SHORT_OPTS="d:n:i:h"
-LONG_OPTS="directory:,name:,ns:,gpu,jazzy,humble,id:,rmw:,help"
+LONG_OPTS="directory:,name:,ns:,gpu,jazzy,humble,id:,rmw:,no-zenoh,help"
 
 # Parse options using getopt
 PARSED_PARAMS=$(getopt --options "$SHORT_OPTS" --long "$LONG_OPTS" --name "$(basename "$0")" -- "$@") || {
@@ -58,6 +59,7 @@ ROBOT_ID=1
 USE_GPU=false
 RMW_IMPLEMENTATION="rmw_cyclonedds_cpp"
 ROS_DOMAIN_ID=10
+USE_ZENOH=1
 PYTORCH_BASE_DATESTAMP="20250613Z"
 
 # Process parsed options
@@ -107,6 +109,10 @@ while true; do
         error_exit "Invalid ROS_DOMAIN_ID: $ROS_DOMAIN_ID. It must be a positive integer."
       fi
       shift 2
+      ;;
+    --no-zenoh)
+      USE_ZENOH=0
+      shift
       ;;
     -h|--help)
       print_usage
@@ -213,6 +219,9 @@ DOCKER_RUN_CMD+=(-v "${WS_DIR}:${CONTAINER_CC_WS}:rw")
 
 # Add ROBOT_ID
 DOCKER_RUN_CMD+=(--env "ROBOT_ID=${ROBOT_ID}")
+
+# Add USE_ZENOH
+DOCKER_RUN_CMD+=(--env "USE_ZENOH=${USE_ZENOH}")
 
 if [[ "$USE_GPU" == true ]]; then
   info_message "Enabling GPU support..."
