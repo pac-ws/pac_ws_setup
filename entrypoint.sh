@@ -32,13 +32,13 @@ LaunchController() {
   
   if [ "$controller_type" = "OFFBOARD_ONLY" ]; then
     echo "Launching Starling Offboard"
-    ros2 launch /workspace/launch/starling_offboard.yaml
+    ros2 launch /workspace/launch/starling/starling_offboard.yaml
   elif [ "$controller_type" = "LPAC_ONE" ]; then
     echo "Launching LPAC L1"
-    ros2 launch /workspace/launch/lpac_l1.yaml
+    ros2 launch /workspace/launch/starling/lpac_l1.yaml
   elif [ "$controller_type" = "LPAC_TWO" ]; then
     echo "Launching LPAC L2"
-    ros2 launch /workspace/launch/lpac_l2.yaml
+    ros2 launch /workspace/launch/starling/lpac_l2.yaml
   fi
 }
 
