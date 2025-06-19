@@ -231,9 +231,10 @@ if [[ "$USE_GPU" == true ]]; then
 fi
 
 # Add entrypoint for all except simulator containers (GCS requires zenoh bridge on startup)
-if [[ "$ROS_NAMESPACE" =~ ^r[0-9]+$  || "$ROS_NAMESPACE" = "gcs" ]]; then
-  DOCKER_RUN_CMD+=(--entrypoint /workspace/pac_ws_setup/entrypoint.sh)
-fi
+# if [[ "$ROS_NAMESPACE" =~ ^r[0-9]+$  || "$ROS_NAMESPACE" = "gcs" ]]; then
+  # DOCKER_RUN_CMD+=(--entrypoint /workspace/pac_ws_setup/entrypoint.sh)
+# fi
+DOCKER_RUN_CMD+=(--entrypoint /workspace/pac_ws_setup/entrypoint.sh)
 
 # Append the image name and the command to run inside the container
 DOCKER_RUN_CMD+=("${IMAGE_NAME}" bash)

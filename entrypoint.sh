@@ -8,6 +8,39 @@ ROSInit() {
   source /workspace/install/local_setup.bash
 }
 
+GetFieldMissionControl() {
+  echo $(ros2 topic echo /mission_control --once --field $1 2>/dev/null | sed '/^---$/d')
+}
+
+LaunchController() {
+  local controller_type=""
+  while true; do
+    if [ "$(GetFieldMissionControl pac_offboard_only)" = "True" ]; then
+      controller_type="OFFBOARD_ONLY"
+      break
+    fi
+    if [ "$(GetFieldMissionControl pac_lpac_l1)" = "True" ]; then
+      controller_type="LPAC_ONE"
+      break
+    fi
+    if [ "$(GetFieldMissionControl pac_lpac_l2)" = "True" ]; then
+      controller_type="LPAC_TWO"
+      break
+    fi
+    sleep 2
+  done
+  
+  if [ "$controller_type" = "OFFBOARD_ONLY" ]; then
+    echo "Launching Starling Offboard"
+    ros2 launch /workspace/launch/starling_offboard.yaml
+  elif [ "$controller_type" = "LPAC_ONE" ]; then
+    echo "Launching LPAC L1"
+    ros2 launch /workspace/launch/lpac_l1.yaml
+  elif [ "$controller_type" = "LPAC_TWO" ]; then
+    echo "Launching LPAC L2"
+    ros2 launch /workspace/launch/lpac_l2.yaml
+  fi
+}
 
 date
 echo "ROS_NAMESPACE: $ROS_NAMESPACE"
@@ -19,17 +52,19 @@ echo "USE_ZENOH: ${USE_ZENOH:-1}"
 # Avoid cluttering the output with bridge messages but save the logs
 ZENOH_LOG_DIR=/workspace/log/zenoh
 mkdir -p "$ZENOH_LOG_DIR"
-
+################################################################################
+## STARLING ##
+################################################################################
 if [[ "$ROS_NAMESPACE" =~ ^r[0-9]+$ ]]; then
   # Only need to starling
   while true; do
     # Extract the IP (IPv4) address for wlan0 from ifconfig output.
     # Depending on your OS, 'inet ' might appear as 'inet addr:' – adjust as needed.
     IP=$(ifconfig wlan0 2>/dev/null \
-          | grep 'inet ' \
-          | awk '{print $2}' \
-          | sed 's/addr://')
-  
+      | grep 'inet ' \
+      | awk '{print $2}' \
+      | sed 's/addr://')
+
     if [[ -n "$IP" &&  "$IP" =~ ^192\.168\.0\. ]]; then
       echo "Assigned IP: $IP"
       break
@@ -48,15 +83,36 @@ if [[ "$ROS_NAMESPACE" =~ ^r[0-9]+$ ]]; then
     echo "Zenoh bridge disabled (USE_ZENOH=0)"
   fi
 
-  # While check if mission_control_enable is set to true or not defined
-  while [ -z "${mission_control_enable+x}" ] || [ "${mission_control_enable}" != "1" ]; do
-    mission_control_enable=$(ros2 topic echo /mission_control --once 2>/dev/null | grep -A 1 "data:" | tail -n 1 | awk '{print $2}')
+  # While check if mission_control_hw_enable is set to true or not defined
+  while [ -z "${mission_control_hw_enable+x}" ] || [ "${mission_control_hw_enable}" != "True" ]; do
+    mission_control_hw_enable=$(GetFieldMissionControl hw_enable)
     sleep 2
   done
-  echo "Mission Control Enabled, Launching Starling Offboard"
-  # ros2 launch /workspace/launch/starling_offboard.yaml
-  ros2 launch /workspace/launch/lpac_l1.yaml
+  echo "Mission Control Enabled, Waiting for controller type"
+  LaunchController
 
+################################################################################
+## PX4 Simulator ##
+################################################################################
+elif [[ "$ROS_NAMESPACE" =~ ^px4_[0-9]+$ ]]; then
+  echo "This is a PX4 simulator container"
+  ROSInit
+
+  # Starling bridge
+  if [[ "${USE_ZENOH:-1}" == "1" ]]; then
+    echo "Starting Starling bridge"
+    ros2 run zenoh_vendor zenoh-bridge-ros2dds -c /workspace/src/zenoh_vendor/configs/zenoh_starling.json5 > "$ZENOH_LOG_DIR"/zenoh_bridge.log 2>&1 &
+  else
+    echo "Zenoh bridge disabled (USE_ZENOH=0)"
+  fi
+
+  echo "Waiting for controller type"
+
+  LaunchController
+
+################################################################################
+## Everything else ##
+################################################################################
 else
   ROSInit
   #

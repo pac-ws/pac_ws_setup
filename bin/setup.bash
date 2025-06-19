@@ -41,7 +41,7 @@ _pac_create_completions()
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
     
-    create_opts="-d --directory -n --name --ns --jazzy --humble --gpu -i --id --ros-domain-id --rmw --no-zenoh -h --help"
+    create_opts="--directory --name --ns --jazzy --humble --gpu --id --ros-domain-id --rmw --no-zenoh --help"
     
     # Handle --rmw flag completion
     if [[ "$prev" == "--rmw" ]]; then
@@ -52,7 +52,7 @@ _pac_create_completions()
     
     # Handle other flags that take arguments
     case "$prev" in
-        -d|--directory|-n|--name|--ns|-i|--id|--ros-domain-id)
+        --directory|--name|--ns|--id|--ros-domain-id)
             # These options require user input, no completions available
             return 0
             ;;
