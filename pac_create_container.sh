@@ -60,7 +60,7 @@ USE_GPU=false
 RMW_IMPLEMENTATION="rmw_cyclonedds_cpp"
 ROS_DOMAIN_ID=10
 USE_ZENOH=1
-PYTORCH_BASE_DATESTAMP="20250613Z"
+PYTORCH_BASE_DATESTAMP="20250618Z"
 
 # Process parsed options
 while true; do
