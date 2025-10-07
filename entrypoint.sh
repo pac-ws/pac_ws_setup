@@ -58,14 +58,14 @@ mkdir -p "$ZENOH_LOG_DIR"
 if [[ "$ROS_NAMESPACE" =~ ^r[0-9]+$ ]]; then
   # Only need to starling
   while true; do
-    # Extract the IP (IPv4) address for wlan0 from ifconfig output.
+    # Extract the IP (IPv4) address for wlan0 or eth0 from ifconfig output.
     # Depending on your OS, 'inet ' might appear as 'inet addr:' – adjust as needed.
-    IP=$(ifconfig wlan0 2>/dev/null \
+    IP=$( (ifconfig wlan0 2>/dev/null || ifconfig eth0 2>/dev/null) \
       | grep 'inet ' \
       | awk '{print $2}' \
       | sed 's/addr://')
 
-    if [[ -n "$IP" &&  "$IP" =~ ^192\.168\.0\. ]]; then
+    if [[ -n "$IP" &&  ( "$IP" =~ ^192\.168\.0\.  || "$IP" =~ ^10\.223\.1\. ) ]]; then
       echo "Assigned IP: $IP"
       break
     fi
