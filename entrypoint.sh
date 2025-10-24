@@ -42,6 +42,12 @@ LaunchController() {
   fi
 }
 
+LaunchVision() {
+    # Todo combine in a launch file
+    ros2 run starling_cams tracking_cam_sync.py &
+    ros2 run apriltag_ros apriltag_node --ros-args -r image_rect:=/camera_down/image_raw -r camera_info:=/camera_down/camera_info --params-file `ros2 pkg prefix apriltag_ros`/share/apriltag_ros/cfg/tags_36h11.yaml &
+}
+
 date
 echo "ROS_NAMESPACE: $ROS_NAMESPACE"
 echo "ROS_DOMAIN_ID: $ROS_DOMAIN_ID"
@@ -82,6 +88,8 @@ if [[ "$ROS_NAMESPACE" =~ ^r[0-9]+$ ]]; then
   else
     echo "Zenoh bridge disabled (USE_ZENOH=0)"
   fi
+
+  LaunchVision
 
   # While check if mission_control_hw_enable is set to true or not defined
   while [ -z "${mission_control_hw_enable+x}" ] || [ "${mission_control_hw_enable}" != "True" ]; do
