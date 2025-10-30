@@ -201,11 +201,13 @@ DOCKER_RUN_CMD=(
   --device=/dev/dri:/dev/dri
   --ipc=host
   --restart=always
+  --volume /run/mpa:/run/mpa
   --env "RCUTILS_COLORIZED_OUTPUT=1"
   --env "PAC_WS=${CONTAINER_CC_WS}"
   --env "ROS_DOMAIN_ID=${ROS_DOMAIN_ID}"
   --env "ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST"
   --env "RMW_IMPLEMENTATION=${RMW_IMPLEMENTATION}"
+  --env "ROS_LOG_LEVEL=rmw_cyclonedds_cpp:=error"
   --workdir "${CONTAINER_CC_WS}"
 )
 
