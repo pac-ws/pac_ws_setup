@@ -155,6 +155,7 @@ REPOS=(
   "${REPOS_PREFIX}pac-ws/async_pac_gnn_interfaces.git src/async_pac_gnn_interfaces"
   "${REPOS_PREFIX}pac-ws/coveragecontrol_sim.git src/coveragecontrol_sim"
   "${REPOS_PREFIX}pac-ws/starling_offboard_cpp.git src/starling_offboard_cpp"
+  "${REPOS_PREFIX}pac-ws/starling_cams.git src/starling_cams"
   "${REPOS_PREFIX}pac-ws/starling_demos_cpp.git src/starling_demos_cpp"
   "${REPOS_PREFIX}pac-ws/zenoh_vendor.git src/zenoh_vendor"
 )
