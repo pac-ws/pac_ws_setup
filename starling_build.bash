@@ -13,6 +13,7 @@ PACKAGES=(
     "px4_homify"
     "starling_offboard_cpp"
     "starling_demos_cpp"
+    "starling_cams"
     "async_pac_gnn_interfaces"
     "zenoh_vendor"
 )
