@@ -89,7 +89,8 @@ if [[ "$ROS_NAMESPACE" =~ ^r[0-9]+$ ]]; then
     echo "Zenoh bridge disabled (USE_ZENOH=0)"
   fi
 
-  LaunchVision
+  # Disable vision until ready for integration
+  #LaunchVision
 
   # While check if mission_control_hw_enable is set to true or not defined
   while [ -z "${mission_control_hw_enable+x}" ] || [ "${mission_control_hw_enable}" != "True" ]; do
