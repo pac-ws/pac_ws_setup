@@ -16,6 +16,7 @@ PACKAGES=(
     "starling_demos_cpp"
     "rviz_pac"
     "gcs"
+    "mission_status"
 )
 
 info_message "Starting GCS build for packages: ${PACKAGES[*]}"
